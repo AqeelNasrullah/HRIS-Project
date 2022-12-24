@@ -2,7 +2,7 @@
 const TimeoffsModel = require("../models/timeoffs");
 
 //importing utils
-const ApiFatures=require("../utils/classes/apiFeatures")
+const ApiFatures = require("../utils/classes/apiFeatures");
 
 //creating Timeoff object
 const timeoffCreate = async (timeoff) => {
@@ -53,12 +53,24 @@ const getAllTimeoffs = async (query, resultPerPage) => {
   }
 };
 
-//getting Timeoff by emp id
+//getting Timeoff by emp id and start date
 const getExistingTimeoff = async (employeeId, startTime) => {
   try {
     const existedTimeoff = TimeoffsModel.findOne({
       employeeId: { $eq: employeeId },
       startTime: { $eq: new Date(startTime) },
+    }).lean();
+    return existedTimeoff;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//getting Timeoff by emp id
+const getEmployeeTimeoff = async (employeeId) => {
+  try {
+    const existedTimeoff = TimeoffsModel.find({
+      employeeId: { $eq: employeeId },
     }).lean();
     return existedTimeoff;
   } catch (error) {
@@ -82,4 +94,5 @@ module.exports = {
   timeoffUpdate,
   getExistingTimeoff,
   getCount,
+  getEmployeeTimeoff,
 };

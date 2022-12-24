@@ -5,22 +5,45 @@ const express = require("express");
 const TimeoffsController = require("../controllers/timeoffs.controllers");
 
 //importing middlewares
-const {validateData}=require("../middlewares/validation")
+const { validateData } = require("../middlewares/validation");
+const AuthorizeTo=require("../middlewares/Auth/Authorization")
+
 
 //importing validations
-const {createSchema,updateSchema}=require("../validations/timeoffs.validations")
+const {
+  createSchema,
+  updateSchema,
+  param,
+} = require("../validations/timeoffs.validations");
+
+//importing constants
+const {SYSTEM_ROLES_ENUM}=require("../../config/constants")
 
 //initializing route
 const router = express.Router();
 
-router.post("/create", validateData(createSchema,"body"),TimeoffsController.createTimeoff);
+router.post(
+  "/create",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  validateData(createSchema, "body"),
+  TimeoffsController.createTimeoff
+);
 
-router.get("/all",TimeoffsController.findAllTimeoffs);
+router.get(
+  "/all",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  validateData(updateSchema, "query"),
+  TimeoffsController.findAllTimeoffs
+);
 
 router
   .route("/:timeoffId")
-  .get(TimeoffsController.getTimeoff)
-  .patch(validateData(updateSchema,"body"),TimeoffsController.updateTimeoff)
+  .get(AuthorizeTo(SYSTEM_ROLES_ENUM[2]),validateData(param, "params"), TimeoffsController.getTimeoff)
+  .patch(AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+    validateData(param, "params"),
+    validateData(updateSchema, "body"),
+    TimeoffsController.updateTimeoff
+  );
 //   .delete( TimeoffsController.deleteTimeoff);
 
 module.exports = router;

@@ -9,7 +9,7 @@ const AuthorizeTo = (...systemRoles) => {
         const { user } = req;
       
         if (!systemRoles.includes(user?.systemRole)) {
-            return next(new ErrorHandler("You are unathrized to do this action.",401))
+            return next(new ErrorHandler("You are unauthrized to do this action.",401))
         }
         next();
     });

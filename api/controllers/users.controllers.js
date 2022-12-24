@@ -53,17 +53,17 @@ const signup = asyncErrorHandler(async (req, res, next) => {
   if (!existedUser) {
     return next(new ErrorHandler("Employee not found", 500));
   }
-  const foundRole=existedUser.find(user=>user.jobDescription.find(des=>des.job!=null));
+  const foundRole=existedUser.find(user=>user.jobDescription.slice(-1).find(des=>des.job!==null))
   if(!foundRole){
     return next(new ErrorHandler("Employee not found", 500));
   }
 user.employee=foundRole._id;
 
 
-  //creating user
+  // creating user
   const createdUser = await Users.createUser(user);
 
-  return sendResponse({ createdUser }, 200, res);
+  return sendResponse({ createdUser}, 200, res);
 });
 
 
@@ -235,8 +235,6 @@ const updateUser = asyncErrorHandler(async (req, res, next) => {
 
   return sendResponse(updatedUser, 200, res);
 });
-
-
 
 const logout = asyncErrorHandler(async (req, res, next) => {
   const { token } = req;

@@ -50,8 +50,8 @@ connectDB();
 
 app.use("/api/users", UsersRoute);
 
-// //authentication
-// app.use(checkAuth);
+//authentication
+app.use(checkAuth);
 
 app.use("/api/employees", EmployeesRoute);
 

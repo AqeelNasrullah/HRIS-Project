@@ -5,22 +5,49 @@ const express = require("express");
 const JobsController = require("../controllers/jobs.controllers");
 
 //importing middlewares
-const {validateData}=require("../middlewares/validation")
+const { validateData } = require("../middlewares/validation");
+const AuthorizeTo=require("../middlewares/Auth/Authorization")
 
 //importing validations
-const {createSchema,updateSchema}=require("../validations/jobs.validations")
+const {
+  createSchema,
+  updateSchema,
+  jobParam,
+} = require("../validations/jobs.validations");
+
+//importing constants
+const { SYSTEM_ROLES_ENUM } = require("../../config/constants");
 
 //initializing route
 const router = express.Router();
 
-router.post("/create", validateData(createSchema,"body"),JobsController.createJob);
+router.post(
+  "/create",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0]),
+  validateData(createSchema, "body"),
+  JobsController.createJob
+);
 
-router.get("/all",JobsController.findAllJobs);
+router.get(
+  "/all",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0], SYSTEM_ROLES_ENUM[1]),
+  validateData(updateSchema, "query"),
+  JobsController.findAllJobs
+);
 
 router
   .route("/:jobId")
-  .get(JobsController.getJob)
-  .patch(validateData(updateSchema,"body"),JobsController.updateJob)
+  .get(
+    AuthorizeTo(SYSTEM_ROLES_ENUM[0], SYSTEM_ROLES_ENUM[1]),
+    validateData(jobParam, "params"),
+    JobsController.getJob
+  )
+  .patch(
+    AuthorizeTo(SYSTEM_ROLES_ENUM[0]),
+    validateData(jobParam, "params"),
+    validateData(updateSchema, "body"),
+    JobsController.updateJob
+  );
 //   .delete( JobsController.deleteJob);
 
 module.exports = router;

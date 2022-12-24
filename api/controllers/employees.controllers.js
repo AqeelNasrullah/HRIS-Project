@@ -9,6 +9,7 @@ const {
 } = require("../services/offboardings.services");
 const { getExistingBenefitById } = require("../services/benefits.services");
 const {getEmployeeAssets}=require("../services/assets.services")
+const {getEmployeeTimeoff}=require("../services/timeoffs.services")
 
 
 //importing middlewares
@@ -53,17 +54,6 @@ const createEmployee = asyncErrorHandler(async (req, res, next) => {
   sendResponse({ createdEmployee }, 201, res);
 });
 
-// const getHR=asyncErrorHandler(async(req,res,next)=>{
-  
-//   //checking user existance
-//   const existedUser = await Employees.getExistingHR("MANAGER");
-//   if (!existedUser) {
-//     return next(new ErrorHandler("User not found", 500));
-//   }
-// const found=existedUser.find(user=>user.jobDescription.find(des=>des.job!=null));
-//   return sendResponse(found, 200, res);
-// })
-
 //upload profile Image
 const uploadProfileImage = asyncErrorHandler(async (req, res, next) => {
   const { _id } = req.query;
@@ -74,7 +64,7 @@ const uploadProfileImage = asyncErrorHandler(async (req, res, next) => {
   }
 
   //checking existance
-  const existedEmployee = await Employees.getExistingEmployeeById(_id);
+  const existedEmployee = await Employees.getEmployeeById(_id);
   if (!existedEmployee) {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
@@ -83,7 +73,7 @@ const uploadProfileImage = asyncErrorHandler(async (req, res, next) => {
   const toBeUpdate = {
     profileImage: `uploads/${fileName}`,
   };
-  const updatedEmployee = await Employees.employeeUpdate(_id, toBeUpdate);
+  const updatedEmployee = await Employees.employeePersonalInfoUpdate(_id, toBeUpdate);
   if (!updatedEmployee) {
     return next(new ErrorHandler("Updation Failed.", 500));
   }
@@ -94,7 +84,7 @@ const uploadProfileImage = asyncErrorHandler(async (req, res, next) => {
 //get all Employees
 const findAllEmployees = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 2;
+  const resultPerPage = 5;
   const allEmployees = await Employees.getAllEmployees(query, resultPerPage);
   const countedEmployees = await Employees.getCount();
   if (!allEmployees) {
@@ -106,7 +96,7 @@ const findAllEmployees = asyncErrorHandler(async (req, res, next) => {
 //get single Employee
 const getEmployee = asyncErrorHandler(async (req, res, next) => {
   const { _id } = req.query;
-  const existedEmployee = await Employees.getExistingEmployeeById(_id);
+  const existedEmployee = await Employees.getEmployeeById(_id);
   if (!existedEmployee) {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
@@ -118,17 +108,18 @@ const getEmployee = asyncErrorHandler(async (req, res, next) => {
 const updateEmployee = asyncErrorHandler(async (req, res, next) => {
   const { _id } = req.query;
   //checking existance
-  const existedEmployee = await Employees.getExistingEmployeeById(_id);
+  const existedEmployee = await Employees.getEmployeeById(_id);
   if (!existedEmployee) {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
   //updating
   const toBeUpdate = req.body;
-  const updatedEmployee = await Employees.employeeUpdate(_id, toBeUpdate);
+  const updatedEmployee = await Employees.employeePersonalInfoUpdate(_id, toBeUpdate);
   if (!updatedEmployee) {
     return next(new ErrorHandler("Updation Failed.", 500));
   }
+
 
   return sendResponse({ updatedEmployee }, 200, res);
 });
@@ -137,15 +128,121 @@ const updateEmployee = asyncErrorHandler(async (req, res, next) => {
 const deleteEmployee = asyncErrorHandler(async (req, res, next) => {
   const { _id } = req.query;
   //checing existance
-  const existedEmployee = await Employees.getExistingEmployeeById(_id);
+  const existedEmployee = await Employees.getEmployeeById(_id);
   if (!existedEmployee) {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
   //removing
   const toBeUpdate = { status: EMPLOYEE_STATUS[1] };
-  const deletedEmployee = await Employees.employeeUpdate(_id, toBeUpdate);
+  const deletedEmployee = await Employees.employeePersonalInfoUpdate(_id, toBeUpdate);
   return sendResponse({ deletedEmployee }, 200, res);
+});
+
+/*  ---------EMPLOYEE EDUCATION INFO----------- */
+//add compensation of  Employee
+const addEducation = asyncErrorHandler(async (req, res, next) => {
+  const { _id } = req.query;
+  //checking employee existance
+  const existedEmployee = await Employees.getEmployeeById(_id);
+  if (!existedEmployee) {
+    return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
+  }
+
+  if(existedEmployee.education.length>0){
+    //checking existance of degree
+    const existed = existedEmployee.education?.find(
+      (edu) =>
+        edu.degree === req.body.degree && edu.major===req.body.major
+    );
+    if (existed) {
+      return next(
+        new ErrorHandler("This degree has already added with same major", 409)
+      );
+    }
+  }
+
+  //updating
+  existedEmployee.education.push(req.body);
+  const toBeUpdate = { education: existedEmployee.education };
+  const updatedEmployee = await Employees.employeePersonalInfoUpdate(_id, toBeUpdate);
+  if (!updatedEmployee) {
+    return next(new ErrorHandler("Updation Failed.", 500));
+  }
+
+  return sendResponse({ updatedEmployee }, 200, res);
+});
+
+//update compensation of  Employee
+const updateEducation = asyncErrorHandler(async (req, res, next) => {
+  const { _id } = req.query;
+  //checking employee existance
+  const existedEmployee = await Employees.getEmployeeById(_id);
+  if (!existedEmployee) {
+    return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
+  }
+
+  const { educationId } = req.params;
+
+  //checking existance of compensation for same emplooyee
+  const educationExistance = existedEmployee.education?.find((edu) =>
+  edu._id.equals(educationId)
+  );
+  if (!educationExistance) {
+    return next(
+      new ErrorHandler(
+        "Education with this doesn't belong to this employee",
+        404
+        )
+        );
+      }
+      //checking existance of time
+      if (req.body.degree) {
+        if(!req.body.major){
+          return next(
+            new ErrorHandler("Please provide major also", 400)
+          );
+        }
+    //checking existance of degree for same employee
+    const existed = existedEmployee.education?.find(
+      (edu) =>
+        edu.degree === req.body.degree && edu.major===req.body.major
+    );
+    if (existed) {
+      return next(
+        new ErrorHandler("This degree has already added with same major", 409)
+      );
+    }
+   
+  }
+
+  //updating
+  educationExistance.institute = req.body.institute
+    ? req.body.institute
+    : educationExistance.institute;
+    educationExistance.major = req.body.major
+    ? req.body.major
+    : educationExistance.major;
+    educationExistance.CGPA = req.body.CGPA
+    ? req.body.CGPA
+    : educationExistance.CGPA;
+    educationExistance.startDate = req.body.startDate
+    ? req.body.startDate
+    : educationExistance.startDate;
+    educationExistance.endDate = req.body.endDate
+    ? req.body.endDate
+    : educationExistance.endDate;
+    educationExistance.degree = req.body.degree
+    ? req.body.degree
+    : educationExistance.degree;
+
+  const toBeUpdate = { education: existedEmployee.education };
+  const updatedEmployee = await Employees.employeePersonalInfoUpdate(_id, toBeUpdate);
+  if (!updatedEmployee) {
+    return next(new ErrorHandler("Updation Failed.", 500));
+  }
+
+  return sendResponse({ updatedEmployee }, 200, res);
 });
 
 /*  ---------EMPLOYEE JOB INFO----------- */
@@ -158,16 +255,19 @@ const addJob = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
-  const existedEffectiveDate = existedEmployee.jobDescription?.find(
-    (jobdes) =>
-      jobdes.effectiveDate.getDate() ===
-      new Date(req.body.effectiveDate).getDate()
-  );
-  if (existedEffectiveDate) {
-    return next(
-      new ErrorHandler("Job already added in same effective date", 404)
+  if(existedEmployee.jobDescription.length>0){
+    const existedEffectiveDate = existedEmployee.jobDescription?.find(
+      (jobdes) =>
+        jobdes.effectiveDate.getDate() ===
+        new Date(req.body.effectiveDate).getDate()
     );
+    if (existedEffectiveDate) {
+      return next(
+        new ErrorHandler("Job already added in same effective date", 404)
+      );
+    }
   }
+
 
   //checking existance of job for same emplooyee
   const existed = existedEmployee.jobDescription?.find((jobdes) =>
@@ -219,7 +319,7 @@ const addJob = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedEmployee }, 200, res);
 });
 
-//add job of Employee
+//update job of Employee
 const updateJob = asyncErrorHandler(async (req, res, next) => {
   const { _id } = req.query;
   const { jobId } = req.params;
@@ -311,6 +411,16 @@ const updateJob = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedEmployee }, 200, res);
 });
 
+//get all jobs,employment and compensation of employee
+const findAllJobs = asyncErrorHandler(async (req, res, next) => {
+  const {_id} = req.query;
+  const employee = await Employees.getAllJobs(_id);
+  if (!employee) {
+    return next(new ErrorHandler("Employee with this id doesn't exists", 404));
+  }
+  return sendResponse({ employee }, 200, res);
+});
+
 /*  ---------EMPLOYEE COMPENSATION INFO----------- */
 //add compensation of  Employee
 const addCompensation = asyncErrorHandler(async (req, res, next) => {
@@ -321,15 +431,17 @@ const addCompensation = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
-  //checking existance of time
-  const existed = existedEmployee.compensation?.find(
-    (com) =>
-      com.effectiveDate.getDate() === new Date(req.body.effectiveDate).getDate()
-  );
-  if (existed) {
-    return next(
-      new ErrorHandler("Compensation already added in same effective date", 404)
+  if(existedEmployee.compensation.length>0){
+    //checking existance of time
+    const existed = existedEmployee.compensation?.find(
+      (com) =>
+        com.effectiveDate.getDate() === new Date(req.body.effectiveDate).getDate()
     );
+    if (existed) {
+      return next(
+        new ErrorHandler("Compensation already added in same effective date", 404)
+      );
+    }
   }
 
   //updating
@@ -456,17 +568,19 @@ const addOnboarding = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
-  //checking existance of task for same emplooyee
-  const existed = existedEmployee.onboarding?.find((task) =>
-    task.onboardingTask.equals(req.body.onboardingTask)
-  );
-  if (existed) {
-    return next(
-      new ErrorHandler(
-        "Task with given Id has already assigned to this employee",
-        400
-      )
-    );
+  if(existedEmployee.jobDescription.length>0){
+      //checking existance of task for same emplooyee
+      const existed = existedEmployee.onboarding?.find((task) =>
+        task.onboardingTask.equals(req.body.onboardingTask)
+      );
+      if (existed) {
+        return next(
+          new ErrorHandler(
+            "Task with given Id has already assigned to this employee",
+            400
+          )
+        );
+      }
   }
 
   //checking task existance
@@ -570,17 +684,19 @@ const addOffboarding = asyncErrorHandler(async (req, res, next) => {
     );
   }
 
-  //checking existance of task for same emplooyee
-  const existed = existedEmployee.offboarding?.find((task) =>
-    task.offboardingTask.equals(req.body.offboardingTask)
-  );
-  if (existed) {
-    return next(
-      new ErrorHandler(
-        "Task with given Id has already assigned to this employee",
-        400
-      )
+  if(existedEmployee.jobDescription.length>0){
+    //checking existance of task for same emplooyee
+    const existed = existedEmployee.offboarding?.find((task) =>
+      task.offboardingTask.equals(req.body.offboardingTask)
     );
+    if (existed) {
+      return next(
+        new ErrorHandler(
+          "Task with given Id has already assigned to this employee",
+          400
+        )
+      );
+    }
   }
 
   //checking task existance
@@ -667,6 +783,16 @@ const updateOffboarding = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedEmployee }, 200, res);
 });
 
+//get all on and offboardings of employee
+const findAllTasks = asyncErrorHandler(async (req, res, next) => {
+  const {_id} = req.query;
+  const employee = await Employees.getAllTasks(_id);
+  if (!employee) {
+    return next(new ErrorHandler("Employee with this id doesn't exists", 404));
+  }
+  return sendResponse({ employee }, 200, res);
+});
+
 /*  ---------EMPLOYEE BENEFITS INFO----------- */
 //add benefit of Employee
 const addBenefit = asyncErrorHandler(async (req, res, next) => {
@@ -677,17 +803,19 @@ const addBenefit = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
-  //checking existance of benefit for same emplooyee
-  const existed = existedEmployee.benefits?.find((benefit) =>
-    benefit.benefitId.equals(req.body.benefitId)
-  );
-  if (existed) {
-    return next(
-      new ErrorHandler(
-        "Benefit with given Id already assigned to this employee",
-        400
-      )
+  if(existedEmployee.jobDescription.length>0){
+    //checking existance of benefit for same emplooyee
+    const existed = existedEmployee.benefits?.find((benefit) =>
+      benefit.benefitId.equals(req.body.benefitId)
     );
+    if (existed) {
+      return next(
+        new ErrorHandler(
+          "Benefit with given Id already assigned to this employee",
+          400
+        )
+      );
+    }
   }
 
   //checking benefit existance
@@ -774,6 +902,16 @@ const updateBenefit = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedEmployee }, 200, res);
 });
 
+//get all on and offboardings of employee
+const findAllBenefits = asyncErrorHandler(async (req, res, next) => {
+  const {_id} = req.query;
+  const employee = await Employees.getAllBenefits(_id);
+  if (!employee) {
+    return next(new ErrorHandler("Employee with this id doesn't exists", 404));
+  }
+  return sendResponse({ employee }, 200, res);
+});
+
 /*  ---------EMPLOYEE DOCUMENTS INFO----------- */
 //add document of Employee
 const addDocument = asyncErrorHandler(async (req, res, next) => {
@@ -845,16 +983,48 @@ const updateDocument = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedEmployee }, 200, res);
 });
 
+//get all documents of employee
+const findAllDocuments = asyncErrorHandler(async (req, res, next) => {
+  const {_id} = req.query;
+  const employee = await Employees.getAllDocuments(_id);
+  if (!employee) {
+    return next(new ErrorHandler("Employee with this id doesn't exists", 404));
+  }
+  return sendResponse({ employee }, 200, res);
+});
+
 /*  ---------EMPLOYEE ASSETS INFO----------- */
 
-const employeeAseet=asyncErrorHandler(async(req,res,next)=>{
+const getEmployeeAseet=asyncErrorHandler(async(req,res,next)=>{
   const {_id} = req.query;
-  
+  //checking employee existance
+  const existedEmployee = await Employees.getExistingEmployeeById(_id);
+  if (!existedEmployee) {
+    return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
+  }
+
   const allAssets = await getEmployeeAssets(_id);
-  if (!allAssets) {
+  if (allAssets.length<1) {
     return next(new ErrorHandler("Not a single asset found", 404));
   }
   return sendResponse({ allAssets }, 200, res);
+})
+
+/*  ---------EMPLOYEE TIMEOFFS INFO----------- */
+
+const getEmployeeTimeoffs=asyncErrorHandler(async(req,res,next)=>{
+  const {_id} = req.query;
+  //checking employee existance
+  const existedEmployee = await Employees.getExistingEmployeeById(_id);
+  if (!existedEmployee) {
+    return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
+  }
+
+  const allTimeoffs = await getEmployeeTimeoff(_id);
+  if (allTimeoffs.length<1) {
+    return next(new ErrorHandler("Not a single timeoff found", 404));
+  }
+  return sendResponse({ allTimeoffs }, 200, res);
 })
 
 module.exports = {
@@ -869,13 +1039,20 @@ module.exports = {
   addCompensation,
   updateCompensation,
   employment,
+  findAllJobs,
   addOnboarding,
   updateOnboarding,
   addOffboarding,
   updateOffboarding,
+  findAllTasks,
   addBenefit,
   updateBenefit,
+  findAllBenefits,
   addDocument,
   updateDocument,
-  employeeAseet,
+  findAllDocuments,
+  getEmployeeAseet,
+  getEmployeeTimeoffs,
+  addEducation,
+  updateEducation
 };

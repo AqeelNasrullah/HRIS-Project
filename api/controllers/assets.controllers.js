@@ -184,7 +184,7 @@ const updateAssignment = asyncErrorHandler(async (req, res, next) => {
     }
    
     //date should be less than last assigned one
-    const notReturned=existedAsset.assignment.find(assign=>!assign.returnedDate)
+    const notReturned=existedAsset.assignment.slice(-1).find(ass=>ass)
     if(notReturned && notReturned!=assignmentExistance){
       if(notReturned.assignedDate.toJSON()<asset.returnedDate){
         return next(new ErrorHandler("Returned Date should be less than last assigned asset date", 400));

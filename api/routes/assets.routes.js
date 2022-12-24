@@ -1,32 +1,55 @@
 //adding dependencies
 const express = require("express");
 
-//importing middlewares
-const {validateData}=require("../middlewares/validation")
-
-//importing validations
-const AssetsSchema=require("../validations/assets.validations")
-
-
 //importing controller
 const AssetsController = require("../controllers/assets.controllers");
+
+//importing middlewares
+const { validateData } = require("../middlewares/validation");
+const AuthorizeTo = require("../middlewares/Auth/Authorization");
+
+//importing validations
+const AssetsSchema = require("../validations/assets.validations");
+
+//importing constants
+const { SYSTEM_ROLES_ENUM } = require("../../config/constants");
 
 //initializing route
 const router = express.Router();
 
-router.post("/create", validateData(AssetsSchema.createAsset,"body"),AssetsController.createAsset);
+router.post(
+  "/create",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[3]),
+  validateData(AssetsSchema.createAsset, "body"),
+  AssetsController.createAsset
+);
 
-router.get("/all",AssetsController.findAllAssets);
+router.get(
+  "/all",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0], SYSTEM_ROLES_ENUM[3]),
+  validateData(AssetsSchema.updateAsset, "query"),
+  AssetsController.findAllAssets
+);
 
 router
   .route("")
-  .get(validateData(AssetsSchema.query, "query"),AssetsController.getAsset)
-  .patch(validateData(AssetsSchema.query, "query"),validateData(AssetsSchema.updateAsset,"body"),AssetsController.updateAsset)
+  .get(
+    AuthorizeTo(SYSTEM_ROLES_ENUM[3]),
+    validateData(AssetsSchema.query, "query"),
+    AssetsController.getAsset
+  )
+  .patch(
+    AuthorizeTo(SYSTEM_ROLES_ENUM[3]),
+    validateData(AssetsSchema.query, "query"),
+    validateData(AssetsSchema.updateAsset, "body"),
+    AssetsController.updateAsset
+  );
 //   .delete( AssetsController.deleteAsset);
 
 //assignment routes
 router.post(
   "/assignment",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[3]),
   validateData(AssetsSchema.query, "query"),
   validateData(AssetsSchema.assignmentAdd, "body"),
   AssetsController.assign
@@ -34,7 +57,8 @@ router.post(
 
 router.patch(
   "/assignment/:assignmentId",
-  validateData(AssetsSchema.param,"params"),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[3]),
+  validateData(AssetsSchema.param, "params"),
   validateData(AssetsSchema.query, "query"),
   validateData(AssetsSchema.assignmentUpdate, "body"),
   AssetsController.updateAssignment

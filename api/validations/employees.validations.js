@@ -131,6 +131,32 @@ const updateSchema = joi.object({
   ),
 });
 
+//education validations
+const addEducation = joi.object({
+      institute: joi.string().alphanum().trim().required(),
+      degree: joi.string().valid(...EMPLOYEE_DEGREE).required(),
+      major: joi.string().trim().required(),
+      CGPA: joi.number().precision(2).strict(),
+      startDate: joi.date().iso().required(),
+      endDate: joi.date().iso().required(),
+});
+
+const updateEducation = joi.object({
+  institute: joi.string().alphanum().trim(),
+  degree: joi.string().valid(...EMPLOYEE_DEGREE),
+  major: joi.string().trim(),
+  CGPA: joi.number().precision(2).strict(),
+  startDate: joi.date().iso(),
+  endDate: joi.date().iso(),
+});
+
+const educationParam=joi.object({
+  educationId: joi
+  .string()
+  .regex(/^[a-f0-9]+$/)
+  .length(24).required(),
+})
+
 const querySchema = joi.object({
   _id: joi
     .string()
@@ -139,6 +165,7 @@ const querySchema = joi.object({
     category:joi.string().valid(...DOCUMENT_CATEGORY)
 });
 
+//jobs validations
 const jobAddSchema = joi.object({
   effectiveDate: joi.date().iso().required(),
   job: joi
@@ -164,6 +191,7 @@ const jobUpdateSchema = joi.object({
     .length(24),
 });
 
+//compensation validations
 const compensationAddSchema = joi.object({
   effectiveDate: joi.date().iso().required(),
   paySchedule: joi
@@ -198,6 +226,14 @@ const compensationUpdateSchema = joi.object({
   comment: joi.string().trim().max(100),
 });
 
+const compensationParam=joi.object({
+  compensationId: joi
+  .string()
+  .regex(/^[a-f0-9]+$/)
+  .length(24).required(),
+})
+
+//employment validations
 const employmentAddSchema = joi.object({
   effectiveDate: joi.date().iso().required(),
   employmentStatus: joi
@@ -213,6 +249,7 @@ const employmentUpdateSchema = joi.object({
   comment: joi.string().trim().max(100),
 });
 
+//onboarding validations
 const onboardingUpdateSchema = joi.object({
   onboardingTask: joi
     .string()
@@ -234,6 +271,7 @@ const onboardingAddSchema = joi.object({
   description: joi.string().trim().max(100),
 });
 
+//offboarding validations
 const offboardingAddSchema = joi.object({
   offboardingTask: joi
     .string()
@@ -255,6 +293,7 @@ const offboardingUpdateSchema = joi.object({
   description: joi.string().trim().max(100),
 });
 
+//benefits validations
 const benefitAddSchema = joi.object({
   benefitId: joi
     .string()
@@ -279,7 +318,7 @@ const benefitUpdateSchema = joi.object({
   status: joi.string().valid(...BENEFITS_STATUS),
 });
 
-
+//documents validation
 const documentAddSchema=joi.object({
   _id: joi
   .string()
@@ -302,6 +341,7 @@ module.exports = {
   jobUpdateSchema,
   compensationAddSchema,
   compensationUpdateSchema,
+  compensationParam,
   employmentAddSchema,
   employmentUpdateSchema,
   onboardingUpdateSchema,
@@ -312,5 +352,8 @@ module.exports = {
   benefitUpdateSchema,
   querySchema,
   documentAddSchema,
-  documentParam
+  documentParam,
+  addEducation,
+  updateEducation,
+  educationParam
 };
