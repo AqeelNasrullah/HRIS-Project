@@ -213,13 +213,6 @@ router.get(
   EmployeesController.findEmployeeBenefits
 );
 
-router.get(
-  "/reports/benefits",
-  // AuthorizeTo(SYSTEM_ROLES_ENUM[1],SYSTEM_ROLES_ENUM[0]),
-  // validateData(EmployeesValidation.benefitsReportSchema, "query"),
-  EmployeesController.findAllBenefits
-);
-
 //documents routes
 router.post(
   "/documents/add",

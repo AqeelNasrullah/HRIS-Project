@@ -53,6 +53,29 @@ const getAllTimeoffs = async (query, resultPerPage) => {
   }
 };
 
+//get all benefits
+const getTimeoffsReport = async (query, resultPerPage) => {
+  try {
+   
+    const apiFeatures = new ApiFatures(
+      TimeoffsModel.find()
+        .populate({ path: "employeeId" , select:"basicInformation.firstName basicInformation.lastName",populate:{path:"jobDescription.job", select:"jobTitle department"} }).select("-createdAt -updatedAt -__v")
+        .lean(),
+      query
+    )
+      .search()
+      .filter()
+      .pagination(resultPerPage);
+    const allEmployees = await apiFeatures.query;
+    if (!allEmployees) {
+      return null;
+    }
+    return allEmployees;
+  } catch (error) {
+    throw error;
+  }
+};
+
 //getting Timeoff by emp id and start date
 const getExistingTimeoff = async (employeeId, startTime) => {
   try {
@@ -95,4 +118,5 @@ module.exports = {
   getExistingTimeoff,
   getCount,
   getEmployeeTimeoff,
+  getTimeoffsReport
 };

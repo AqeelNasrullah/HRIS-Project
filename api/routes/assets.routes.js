@@ -24,13 +24,6 @@ router.post(
   AssetsController.createAsset
 );
 
-router.get(
-  "/all",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[0], SYSTEM_ROLES_ENUM[3]),
-  validateData(AssetsSchema.updateAsset, "query"),
-  AssetsController.findAllAssets
-);
-
 router
   .route("")
   .get(
@@ -44,7 +37,7 @@ router
     validateData(AssetsSchema.updateAsset, "body"),
     AssetsController.updateAsset
   );
-//   .delete( AssetsController.deleteAsset);
+
 
 //assignment routes
 router.post(

@@ -87,25 +87,6 @@ const updateAsset = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedAsset }, 200, res);
 });
 
-
-
-
-
-// // remove Asset
-// const deleteAsset = asyncErrorHandler(async (req, res, next) => {
-//   const { assetId } = req.params;
-//   //checing existance
-//   const existedAsset = await Assets.getExistingAssetById(assetId);
-//   if (!existedAsset) {
-//     return next(new ErrorHandler("Asset with given Id doesn't exists", 404));
-//   }
-
-//   //removing
-//   const toBeUpdate = { status: Asset_STATUS[1] };
-//   const deletedAsset = await Assets.AssetUpdate(assetId, toBeUpdate);
-//   return sendResponse({ deletedAsset }, 200, res);
-// });
-
 /*  ---------ASSET ASSIGNMENT ----------- */
 //assign asset
 const assign = asyncErrorHandler(async (req, res, next) => {

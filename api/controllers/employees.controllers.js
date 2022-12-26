@@ -936,64 +936,7 @@ const findEmployeeBenefits = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ employee }, 200, res);
 });
 
-//reports
 
-//get all benefits
-const findAllBenefits = asyncErrorHandler(async (req, res, next) => {
-  const query = req.query;
-  const { result } = req.query;
-  const allBenefits = await Employees.getAllBenefits(query, result);
-  const countedBenefits = allBenefits.length;
-  if (!allBenefits) {
-    return next(new ErrorHandler("Not a single benefit found", 404));
-  }
-
-  //filter by job title
-  if (req.query.jobTitle) {
-    const benefits = allBenefits.filter((emp) =>
-      emp.jobDescription
-        .slice(-1)
-        .find((j) => j.job.jobTitle == req.query.jobTitle)
-    );
-    if (!benefits) {
-      return next(
-        new ErrorHandler(
-          "Not a single benefit found with provide jobTitle",
-          404
-        )
-      );
-    }
-    const count = benefits.length;
-    return sendResponse(
-      { countBenefits: count, allBenefits: benefits },
-      200,
-      res
-    );
-  }
-  //filter by category
-  if (req.query.category) {
-    const benefits = allBenefits.filter((emp) =>
-      emp.benefits.find(
-        (benefit) => benefit.benefitId.category == req.query.category
-      )
-    );
-    if (!benefits) {
-      return next(
-        new ErrorHandler(
-          "Not a single benefit found with provide category",
-          404
-        )
-      );
-    }
-    const count = benefits.length;
-    return sendResponse(
-      { countBenefits: count, allBenefits: benefits },
-      200,
-      res
-    );
-  }
-  return sendResponse({ countedBenefits, allBenefits }, 200, res);
-});
 
 /*  ---------EMPLOYEE DOCUMENTS INFO----------- */
 //add document of Employee
@@ -1131,7 +1074,7 @@ module.exports = {
   addBenefit,
   updateBenefit,
   findEmployeeBenefits,
-  findAllBenefits,
+  
   addDocument,
   updateDocument,
   findAllDocuments,

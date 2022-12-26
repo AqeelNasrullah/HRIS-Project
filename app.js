@@ -14,6 +14,8 @@ const OnboardingRoutes = require("./api/routes/onboarding.routes");
 const OffboardingRoutes = require("./api/routes/offboarding.routes");
 const TimeoffRoutes = require("./api/routes/timeoffs.routes");
 const BenefitsRoutes = require("./api/routes/benefits.routes");
+const ReportsRoutes=require("./api/routes/reports.routes");
+const AnalyticsRoutes=require("./api/routes/analytics.routes")
 
 //importing db
 const { connectDB } = require("./config/database");
@@ -49,6 +51,10 @@ app.use(function (req, res, next) {
 connectDB();
 
 app.use("/api/users", UsersRoute);
+
+app.use("/api/reports",ReportsRoutes);
+
+app.use("/api/analytics",AnalyticsRoutes)
 
 //authentication
 app.use(checkAuth);

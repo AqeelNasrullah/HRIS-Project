@@ -53,6 +53,23 @@ const getAllAssets = async (query, resultPerPage) => {
   }
 };
 
+//get all Assets for
+const getAssetsReport = async (query, resultPerPage) => {
+  try {
+    const apiFeatures = new ApiFatures(AssetsModel.find().populate({path:"assignment.employee",select:"basicInformation.firstName"}).select("-createdAt -updatedAt -__v -status"), query)
+      .search()
+      .filter()
+      .pagination(resultPerPage);
+    const allAssets = await apiFeatures.query;
+    if (!allAssets) {
+      return null;
+    }
+    return allAssets;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getEmployeeAssets = async (id) => {
   try {
     const allAssets = await AssetsModel.find({
@@ -99,4 +116,5 @@ module.exports = {
   getExistingAsset,
   getEmployeeAssets,
   getCount,
+  getAssetsReport
 };

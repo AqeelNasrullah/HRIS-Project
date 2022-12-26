@@ -161,24 +161,13 @@ const getEmployeeBenefits = async (_id) => {
   }
 };
 
-//get all documents of employee
-const getAllDocuments = async (_id) => {
-  try {
-    const employee = await EmployeesModel.findById(_id).select("documents");
-    return employee;
-  } catch (error) {
-    throw error;
-  }
-};
-
-//reports
 //get all benefits
 const getAllBenefits = async (query, resultPerPage) => {
   try {
    
     const apiFeatures = new ApiFatures(
       EmployeesModel.find()
-        .populate({ path: "benefits.benefitId jobDescription.job" , select:"title category amount jobTitle" }).select("basicInformation.firstName")
+        .populate({ path: "benefits.benefitId jobDescription.job" , select:"title category amount jobTitle" }).select("basicInformation.firstName benefits.status")
         .lean(),
       query
     )
@@ -195,6 +184,40 @@ const getAllBenefits = async (query, resultPerPage) => {
   }
 };
 
+//get all documents of employee
+const getAllDocuments = async (_id) => {
+  try {
+    const employee = await EmployeesModel.findById(_id).select("documents");
+    return employee;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//get all benefits
+const getAllEmployements = async (query, resultPerPage) => {
+  try {
+   
+    const apiFeatures = new ApiFatures(
+      EmployeesModel.find().select("basicInformation.firstName basicInformation.lastName compensation")
+        .lean(),
+      query
+    )
+      .search()
+      .filter()
+      .pagination(resultPerPage);
+    const allEmployees = await apiFeatures.query;
+    if (!allEmployees) {
+      return null;
+    }
+    return allEmployees;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
 module.exports = {
   employeeCreate,
   employeePersonalInfoUpdate,
@@ -210,4 +233,5 @@ module.exports = {
   getAllDocuments,
   getEmployeeBenefits,
   getAllBenefits,
+  getAllEmployements
 };
