@@ -22,9 +22,6 @@ const getAllJobs = async (query, resultPerPage) => {
       .filter()
       .pagination(resultPerPage);
     const allJobs = await apiFeatures.query;
-    if (!allJobs) {
-      return null;
-    }
     return allJobs;
   } catch (error) {
     throw error;

@@ -23,7 +23,7 @@ const createAsset = joi.object({
     .alphanum()
     .valid(...ASSET_CATEGORY)
     .required(),
-  description: joi.string().max(50).alphanum().trim(),
+  description: joi.string().max(50).regex(/^[A-Za-z0-9 ]+$/).trim(),
   serialNumber: joi.string().max(25).required(),
 });
 
@@ -36,7 +36,7 @@ const updateAsset = joi.object({
     .string()
     .alphanum()
     .valid(...ASSET_CATEGORY),
-  description: joi.string().max(50).alphanum().trim(),
+    description: joi.string().max(50).regex(/^[A-Za-z0-9 ]+$/).trim(),
   serialNumber: joi.string().max(25),
 });
 
@@ -45,7 +45,7 @@ const assignmentAdd = joi.object({
     .string()
     .regex(/^[a-f0-9]+$/)
     .length(24)
-    .required(),
+    .required()
 });
 
 const assignmentUpdate = joi.object({

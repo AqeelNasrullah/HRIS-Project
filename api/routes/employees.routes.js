@@ -97,7 +97,7 @@ router.patch(
   AuthorizeTo(SYSTEM_ROLES_ENUM[1]),
   validateData(EmployeesValidation.querySchema, "query"),
   validateData(EmployeesValidation.employmentUpdateSchema, "body"),
-  EmployeesController.employment
+  EmployeesController.updateEmployment
 );
 
 //job routes
@@ -147,7 +147,7 @@ router.get(
 //onboarding tasks routes
 router.post(
   "/onboarding/add",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  // AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
   validateData(EmployeesValidation.querySchema, "query"),
   validateData(EmployeesValidation.onboardingAddSchema, "body"),
   EmployeesController.addOnboarding
@@ -165,7 +165,7 @@ router.patch(
 //offboarding tasks routes
 router.post(
   "/offboarding/add",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  // AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
   validateData(EmployeesValidation.querySchema, "query"),
   validateData(EmployeesValidation.offboardingAddSchema, "body"),
   EmployeesController.addOffboarding
@@ -210,6 +210,13 @@ router.get(
   "/benefits",
   AuthorizeTo(SYSTEM_ROLES_ENUM[1],SYSTEM_ROLES_ENUM[0]),
   validateData(EmployeesValidation.querySchema, "query"),
+  EmployeesController.findEmployeeBenefits
+);
+
+router.get(
+  "/reports/benefits",
+  // AuthorizeTo(SYSTEM_ROLES_ENUM[1],SYSTEM_ROLES_ENUM[0]),
+  // validateData(EmployeesValidation.benefitsReportSchema, "query"),
   EmployeesController.findAllBenefits
 );
 

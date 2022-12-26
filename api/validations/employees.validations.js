@@ -17,6 +17,7 @@ const {
 } = require("../../config/constants");
 
 const createSchema = joi.object({
+  hireDate: joi.date().iso(),
   basicInformation: joi.object({
     firstName: joi
       .string()
@@ -64,7 +65,7 @@ const createSchema = joi.object({
   }),
   education: joi.array().items(
     joi.object({
-      institute: joi.string().alphanum().trim(),
+      institute: joi.string().regex(/^[A-Za-z ]+$/).trim(),
       degree: joi.string().valid(...EMPLOYEE_DEGREE),
       major: joi.string().trim(),
       CGPA: joi.number().precision(2).strict(),
@@ -121,7 +122,7 @@ const updateSchema = joi.object({
   }),
   education: joi.array().items(
     joi.object({
-      institute: joi.string().alphanum().trim(),
+      institute: joi.string().regex(/^[A-Za-z ]+$/).trim(),
       degree: joi.string().valid(...EMPLOYEE_DEGREE),
       major: joi.string().trim(),
       CGPA: joi.number().precision(2).strict(),
@@ -133,8 +134,8 @@ const updateSchema = joi.object({
 
 //education validations
 const addEducation = joi.object({
-      institute: joi.string().alphanum().trim().required(),
-      degree: joi.string().valid(...EMPLOYEE_DEGREE).required(),
+  institute: joi.string().regex(/^[A-Za-z ]+$/).trim().required(),
+  degree: joi.string().valid(...EMPLOYEE_DEGREE).required(),
       major: joi.string().trim().required(),
       CGPA: joi.number().precision(2).strict(),
       startDate: joi.date().iso().required(),
@@ -142,7 +143,7 @@ const addEducation = joi.object({
 });
 
 const updateEducation = joi.object({
-  institute: joi.string().alphanum().trim(),
+  institute: joi.string().regex(/^[A-Za-z ]+$/).trim(),
   degree: joi.string().valid(...EMPLOYEE_DEGREE),
   major: joi.string().trim(),
   CGPA: joi.number().precision(2).strict(),
@@ -163,6 +164,15 @@ const querySchema = joi.object({
     .regex(/^[a-f0-9]+$/)
     .length(24).required(),
     category:joi.string().valid(...DOCUMENT_CATEGORY)
+});
+
+const benefitsReportSchema = joi.object({
+  _id: joi
+    .string()
+    .regex(/^[a-f0-9]+$/),
+    result:joi.number().integer(),
+    page:joi.number().integer()
+    
 });
 
 //jobs validations
@@ -355,5 +365,6 @@ module.exports = {
   documentParam,
   addEducation,
   updateEducation,
-  educationParam
+  educationParam,
+  benefitsReportSchema
 };

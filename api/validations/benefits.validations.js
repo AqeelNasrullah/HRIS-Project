@@ -15,7 +15,7 @@ const benefitsSchema = joi.object({
     .alphanum()
     .valid(...BENEFITS_CATEGORY)
     .required(),
-  title: joi.string().max(15).alphanum().trim().required(),
+    title: joi.string().regex(/^[A-Z0-9 ]+$/).trim().required(),
   amount: joi.number().positive(),
 });
 
@@ -28,7 +28,7 @@ const updateSchema = joi.object({
     .string()
     .alphanum()
     .valid(...BENEFITS_CATEGORY),
-  title: joi.string().max(15).alphanum().trim(),
+  title: joi.string().regex(/^[A-Z0-9 ]+$/).trim(),
   amount: joi.number().positive(),
 });
 

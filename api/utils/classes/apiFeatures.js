@@ -17,12 +17,13 @@ class ApiFatures {
   }
   filter() {
     const filteredQuery = { ...this.queryStr };
-   // console.log(filteredQuery);
     const removedFields = ["keyword", "page", "limit"];
     removedFields.forEach((key) => delete filteredQuery[key]);
+
+    //converting to string
     let queryJson = JSON.stringify(filteredQuery);
     queryJson = queryJson.replace(/\b(lt|lte|gt|gte)\b/g, (key) => `$${key}`);
-
+    
     this.query = this.query.find(JSON.parse(queryJson));
     return this;
   }

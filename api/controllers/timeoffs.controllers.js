@@ -1,9 +1,9 @@
 //importing packages
-const mongoose=require('mongoose')
+const mongoose = require("mongoose");
 
 //importing services
 const Timeoffs = require("../services/timeoffs.services");
-const {getExistingEmployeeById}=require("../services/employee.services")
+const { getExistingEmployeeById } = require("../services/employee.services");
 
 //importing middlewares
 const asyncErrorHandler = require("../middlewares/errors/asyncErrorHandler");
@@ -18,24 +18,23 @@ const { EMPLOYEE_STATUS } = require("../../config/constants");
 //creating Timeoff
 const createTimeoff = asyncErrorHandler(async (req, res, next) => {
   const timeoff = req.body;
-  const {id}=req.query;
-  timeoff.employeeId=mongoose.Types.ObjectId(id)
+  const { id } = req.query;
+  timeoff.employeeId = mongoose.Types.ObjectId(id);
   //if emloyee doesn't exist
-  if(timeoff.employeeId){
-      const existedEmployee=await getExistingEmployeeById(timeoff.employeeId);
-      if(!existedEmployee || existedEmployee.status===EMPLOYEE_STATUS[1]){
-          return next(
-              new ErrorHandler("Employee doesn't exist ", 404)
-            ); 
-      }
+  if (timeoff.employeeId) {
+    const existedEmployee = await getExistingEmployeeById(timeoff.employeeId);
+    if (!existedEmployee || existedEmployee.status === EMPLOYEE_STATUS[1]) {
+      return next(new ErrorHandler("Employee doesn't exist ", 404));
+    }
   }
 
   //if Timeoff exists?
-  const existedTimeoff = await Timeoffs.getExistingTimeoff(timeoff.employeeId,timeoff.startTime);
+  const existedTimeoff = await Timeoffs.getExistingTimeoff(
+    timeoff.employeeId,
+    timeoff.startTime
+  );
   if (existedTimeoff) {
-    return next(
-      new ErrorHandler("Timeoff has already been already set", 409)
-    );
+    return next(new ErrorHandler("Timeoff has already been already set", 409));
   }
 
   // creating Timeoff
@@ -50,13 +49,29 @@ const createTimeoff = asyncErrorHandler(async (req, res, next) => {
 //get all Timeoffs
 const findAllTimeoffs = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 2;
-  const allTimeoffs = await Timeoffs.getAllTimeoffs(query, resultPerPage);
-  const countedTimeoffs = await Timeoffs.getCount();
+  const { result } = req.query;
+  const allTimeoffs = await Timeoffs.getAllTimeoffs(query, result);
+  const countedTimeoffs = allTimeoffs?.length;
   if (!allTimeoffs) {
-  return  next(new ErrorHandler("Not a single Timeoff found", 404));
+    return next(new ErrorHandler("Not a single Timeoff found", 404));
   }
-  return sendResponse({countedTimeoffs,allTimeoffs},200,res)
+  return sendResponse({ countedTimeoffs, allTimeoffs }, 200, res);
+});
+
+//get all Timeoffs
+const findUpcomingTimeoffs = asyncErrorHandler(async (req, res, next) => {
+  const query = req.query;
+  const { result } = req.query;
+  const allTimeoffs = await Timeoffs.getAllTimeoffs(query, result);
+
+  if (!allTimeoffs) {
+    return next(new ErrorHandler("Not a single Timeoff found", 404));
+  }
+  const upcomingTimeOffs = allTimeoffs.filter(
+    (time) => new Date(time.startTime) >= Date.now()
+  );
+  const countedTimeoffs = upcomingTimeOffs?.length;
+  return sendResponse({ countedTimeoffs, upcomingTimeOffs }, 200, res);
 });
 
 //get Timeoff
@@ -79,28 +94,25 @@ const updateTimeoff = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Timeoff with given Id doesn't exists", 404));
   }
 
-  const {id}=req.query
+  const { id } = req.query;
   //if emloyee doesn't exist
-  if(id){
-      const existedEmployee=await getExistingEmployeeById(id);
-      if(!existedEmployee || existedEmployee.status===EMPLOYEE_STATUS[1]){
-          return next(
-              new ErrorHandler("Employee doesn't exist ", 404)
-            ); 
-      }
+  if (id) {
+    const existedEmployee = await getExistingEmployeeById(id);
+    if (!existedEmployee || existedEmployee.status === EMPLOYEE_STATUS[1]) {
+      return next(new ErrorHandler("Employee doesn't exist ", 404));
+    }
   }
   const toBeUpdate = req.body;
-  toBeUpdate.employeeId=id
+  toBeUpdate.employeeId = id;
 
   //if Timeoff exists?
-  const otherTimeoff = await Timeoffs.getExistingTimeoff(toBeUpdate.employeeId,toBeUpdate.startTime);
+  const otherTimeoff = await Timeoffs.getExistingTimeoff(
+    toBeUpdate.employeeId,
+    toBeUpdate.startTime
+  );
   if (otherTimeoff) {
-    return next(
-      new ErrorHandler("Timeoff has already been already set", 409)
-    );
+    return next(new ErrorHandler("Timeoff has already been already set", 409));
   }
-
- 
 
   //updating
   const updatedTimeoff = await Timeoffs.timeoffUpdate(timeoffId, toBeUpdate);
@@ -111,25 +123,10 @@ const updateTimeoff = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedTimeoff }, 200, res);
 });
 
-// // remove Timeoff
-// const deleteTimeoff = asyncErrorHandler(async (req, res, next) => {
-//   const { timeoffId } = req.params;
-//   //checing existance
-//   const existedTimeoff = await Timeoffs.getExistingTimeoffById(timeoffId);
-//   if (!existedTimeoff) {
-//     return next(new ErrorHandler("Timeoff with given Id doesn't exists", 404));
-//   }
-
-//   //removing
-//   const toBeUpdate = { status: Timeoff_STATUS[1] };
-//   const deletedTimeoff = await Timeoffs.TimeoffUpdate(timeoffId, toBeUpdate);
-//   return sendResponse({ deletedTimeoff }, 200, res);
-// });
-
 module.exports = {
   createTimeoff,
   findAllTimeoffs,
   updateTimeoff,
-  //   deleteTimeoff,
+  findUpcomingTimeoffs,
   getTimeoff,
 };

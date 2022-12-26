@@ -1,9 +1,10 @@
 //importing model
-const { EMPLOYEE_STATUS } = require("../../config/constants");
+const { EMPLOYEE_STATUS, EMPLOYEE_DEGREE } = require("../../config/constants");
 const EmployeesModel = require("../models/employees");
 
 //importing utils
 const ApiFatures = require("../utils/classes/apiFeatures");
+
 
 //creating Employee object
 const employeeCreate = async (employee) => {
@@ -141,7 +142,9 @@ const getAllJobs = async (_id) => {
 //get all tasks of employee
 const getAllTasks = async (_id) => {
   try {
-    const employee = await EmployeesModel.findById(_id).select("onboarding offboarding");
+    const employee = await EmployeesModel.findById(_id).select(
+      "onboarding offboarding"
+    );
     return employee;
   } catch (error) {
     throw error;
@@ -149,7 +152,7 @@ const getAllTasks = async (_id) => {
 };
 
 //get all benefits of employee
-const getAllBenefits = async (_id) => {
+const getEmployeeBenefits = async (_id) => {
   try {
     const employee = await EmployeesModel.findById(_id).select("benefits");
     return employee;
@@ -168,6 +171,30 @@ const getAllDocuments = async (_id) => {
   }
 };
 
+//reports
+//get all benefits
+const getAllBenefits = async (query, resultPerPage) => {
+  try {
+   
+    const apiFeatures = new ApiFatures(
+      EmployeesModel.find()
+        .populate({ path: "benefits.benefitId jobDescription.job" , select:"title category amount jobTitle" }).select("basicInformation.firstName")
+        .lean(),
+      query
+    )
+      .search()
+      .filter()
+      .pagination(resultPerPage);
+    const allEmployees = await apiFeatures.query;
+    if (!allEmployees) {
+      return null;
+    }
+    return allEmployees;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   employeeCreate,
   employeePersonalInfoUpdate,
@@ -181,5 +208,6 @@ module.exports = {
   getAllJobs,
   getAllTasks,
   getAllDocuments,
-  getAllBenefits
+  getEmployeeBenefits,
+  getAllBenefits,
 };

@@ -1,3 +1,4 @@
+const { number } = require("joi");
 const joi = require("joi");
 
 const jobParam = joi.object({
@@ -12,12 +13,12 @@ const createSchema = joi.object({
   department: joi
     .string()
     .trim()
-    .regex(/^[A-Za-z ]+$/)
+    .regex(/^[A-Z ]+$/)
     .required(),
   jobTitle: joi
     .string()
     .trim()
-    .regex(/^[A-Za-z ]+$/)
+    .regex(/^[A-Z ]+$/)
     .required(),
 });
 
@@ -26,14 +27,16 @@ const updateSchema = joi.object({
     .string()
     .regex(/^[a-f0-9]+$/)
     .length(24),
+    page:joi.number(),
+    result:joi.number(),
   department: joi
     .string()
     .trim()
-    .regex(/^[A-Za-z ]+$/),
+    .regex(/^[A-Z ]+$/),
   jobTitle: joi
     .string()
     .trim()
-    .regex(/^[A-Za-z ]+$/),
+    .regex(/^[A-Z ]+$/),
 });
 
 module.exports = { createSchema, updateSchema, jobParam };

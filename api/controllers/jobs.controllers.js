@@ -34,8 +34,8 @@ const createJob = asyncErrorHandler(async (req, res, next) => {
 //get all Jobs
 const findAllJobs = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 2;
-  const allJobs = await Jobs.getAllJobs(query, resultPerPage);
+  const {result} = req.query;
+  const allJobs = await Jobs.getAllJobs(query, result);
   const countedJobs = await Jobs.getCount();
   if (!allJobs) {
   return  next(new ErrorHandler("Not a single Job found", 404));

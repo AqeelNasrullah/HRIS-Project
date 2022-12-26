@@ -34,7 +34,7 @@ const createBenefit = asyncErrorHandler(async (req, res, next) => {
 //get all Benefits
 const findAllBenefits = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 2;
+  const resultPerPage = 10;
   const allBenefits = await Benefits.getAllBenefits(query, resultPerPage);
   const countedBenefits = await Benefits.getCount();
   if (!allBenefits) {
