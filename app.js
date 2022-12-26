@@ -6,6 +6,7 @@ const cors = require("cors");
 const uncaughtException = require("./api/middlewares/errors/uncaughtException");
 
 //importing routes
+const TwilioRoute=require("./api/routes/twilio.routes")
 const UsersRoute = require("./api/routes/users.routes");
 const EmployeesRoute = require("./api/routes/employees.routes");
 const JobsRoutes = require("./api/routes/jobs.routes");
@@ -49,6 +50,8 @@ app.use(function (req, res, next) {
 });
 
 connectDB();
+
+app.use("/api/twilio",TwilioRoute)
 
 app.use("/api/users", UsersRoute);
 

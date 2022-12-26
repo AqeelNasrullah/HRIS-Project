@@ -71,19 +71,20 @@ const userResetToken = async (token) => {
   }
 };
 
-// const verifyOTP = async ({ userId, OTP }) => {
-//   try {
-//     const user = await UsersMOdel.findOne({ _id: userId, OTP })
-//       .lean()
-//       .select('-password')
+const verifyOTP = async ({ userId, code }) => {
+  try {
+    console.log(code);
+    const user = await UsersModel.findOne({ _id: userId, OTP:{$eq: code}})
+      .lean()
+      .select('-password')
 
-//     console.log('*** OTP verified ***', user)
+    console.log('*** OTP verified ***', user)
 
-//     return user
-//   } catch (error) {
-//     throw error
-//   }
-// }
+    return user
+  } catch (error) {
+    throw error
+  }
+}
 
 module.exports = {
   createUser,
@@ -91,6 +92,6 @@ module.exports = {
   getUserById,
   updateUser,
   userResetToken,
-  getDetailedUserById
-  // verifyOTP
+  getDetailedUserById,
+  verifyOTP
 }

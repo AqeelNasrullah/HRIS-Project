@@ -9,7 +9,7 @@ const crypto = require("crypto");
 
 // importing services
 const Users = require("../services/users.services");
-const {getExistingHR}=require("../services/employee.services")
+const { getExistingHR } = require("../services/employee.services");
 
 //importing middlewares
 const asyncErrorHandler = require("../middlewares/errors/asyncErrorHandler");
@@ -53,20 +53,19 @@ const signup = asyncErrorHandler(async (req, res, next) => {
   if (!existedUser) {
     return next(new ErrorHandler("Employee not found", 500));
   }
-  const foundRole=existedUser.find(user=>user.jobDescription.slice(-1).find(des=>des.job!==null))
-  if(!foundRole){
+  const foundRole = existedUser.find((user) =>
+    user.jobDescription.slice(-1).find((des) => des.job !== null)
+  );
+  if (!foundRole) {
     return next(new ErrorHandler("Employee not found", 500));
   }
-user.employee=foundRole._id;
-
+  user.employee = foundRole._id;
 
   // creating user
   const createdUser = await Users.createUser(user);
 
-  return sendResponse({ createdUser}, 200, res);
+  return sendResponse({ createdUser }, 200, res);
 });
-
-
 
 const login = asyncErrorHandler(async (req, res, next) => {
   const { password, email } = req.body;
@@ -83,50 +82,71 @@ const login = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Incorrect credentails.", 401));
   }
 
-  //   const buff = await randomBytes(5);
+  //sending mail
+  const buff = await randomBytes(6);
+  const loginToken = buff.toString("hex");
 
-  // const OTP = buff.toString('hex')
+  //hashing token and save in model
+  const resetLoginToken = crypto
+    .createHash("sha256")
+    .update(loginToken)
+    .digest("hex");
+    //setting expire ResetPassword
+    const resetLoginExpire = Date.now() + 15 * 60 * 1000;
+    console.log(resetLoginToken);
 
-  // console.log(`${buff.length} bytes of random data: ${OTP}`)
-
-  // const sentSMS = await client.messages.create({
-  //   body: OTP,
-  //   messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
-  //   to: user.phoneNumber
-  // })
-
-  // const updatesUser = await UserService.updateUser({
-  //   userId: user._id,
-  //   dataToUpdate: { OTP }
-  // })
-
-  //creating token
-  const uniqueKey = uuidv4();
-
-  const payload = {
-    _id: user._id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    uniqueKey,
+  const toBeUpdate = {
+    resetPasswordToken: resetLoginToken,
+    resetPaswordExpire: resetLoginExpire,
   };
 
-  const token = JWT.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: "24h",
-  });
+  const updatedUser = await Users.updateUser({userId:user._id, toBeUpdate});
+  if (!updatedUser) {
+    return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
+  }
+  const verificationUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/api/users/verification/${loginToken}/${updatedUser._id}`;
+  const message = `Enter your phone verification code on this site : -  \n\n${verificationUrl}\n\n If you didn't request this email, then ignore it  :)`;
+  try {
+    sendEmail({
+      email: user.email,
+      subject: `Human Resource Information System`,
+      message,
+    });
+  } catch (error) {
+    const toBeUpdate = {
+      resetPasswordToken: undefined,
+      resetPaswordExpire: undefined,
+    };
+    const updatedUser = await Users.updateUser({userId:user._id, toBeUpdate});
+    if (!updatedUser) {
+      return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
+    }
+    return next(new ErrorHandler(error.message, 500));
+  }
 
-  await Users.updateUser({
-    userId: user._id,
-    dataToUpdate: { $addToSet: { uniqueKeys: uniqueKey } },
-  });
+//sending OTP
+const otpBuff = await randomBytes(5);
 
-  return sendResponse({ token }, 200, res);
+const OTP = otpBuff.toString("hex");
 
-  // res.status(200).json({
-  //   message: 'Please enter the OTP',
-  //   updatesUser
-  // })
+console.log(`${otpBuff.length} bytes of random data: ${OTP}`);
+
+const sentSMS = await client.messages.create({
+  body: OTP,
+  messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
+  to: user.phoneNumber,
 });
+
+const updatesUser = await Users.updateUser({
+  userId: user._id,
+  dataToUpdate: { OTP },
+});
+
+  return sendResponse({message:`Email sent to ${user.email} successfully`},200,res)
+});
+
 
 //forget password
 const forgetPassword = asyncErrorHandler(async (req, res, next) => {
@@ -231,7 +251,10 @@ const updateUser = asyncErrorHandler(async (req, res, next) => {
 
   //update user
   const dataToUpdate = req.body;
-  const updatedUser = await Users.updateUser({ userId:user._id, dataToUpdate });
+  const updatedUser = await Users.updateUser({
+    userId: user._id,
+    dataToUpdate,
+  });
 
   return sendResponse(updatedUser, 200, res);
 });
@@ -252,7 +275,7 @@ const logout = asyncErrorHandler(async (req, res, next) => {
   return sendResponse(null, 200, res);
 });
 
-const getUser=asyncErrorHandler(async(req,res,next)=>{
+const getUser = asyncErrorHandler(async (req, res, next) => {
   const { user } = req;
 
   //checking user existance
@@ -262,52 +285,37 @@ const getUser=asyncErrorHandler(async(req,res,next)=>{
   }
 
   return sendResponse(existedUser, 200, res);
-})
+});
 
-// const verifyOTP = async (req, res) => {
-//   try {
-//     const { OTP } = req.body;
+const verifyOTP =asyncErrorHandler( async (req, res,next) => {
+    const { code } = req.body;
+    const { userId } = req.params;
+    const user = await Users.verifyOTP({ userId,code });
+    if (!user) {
+      return next(new ErrorHandler("Verification failed!",401)) ;
+    }
 
-//     const { userId } = req.params;
+    const uniqueKey = uuidv4();
+    const payload = {
+      _id: user._id,
+      email: user.email,
+      userName: user.userName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      uniqueKey,
+    };
 
-//     const user = await UserService.verifyOTP({ OTP, userId });
+    const token = JWT.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
 
-//     if (!user) {
-//       return res.status(401).json({
-//         message: "Verification failed!",
-//       });
-//     }
+    await Users.updateUser({
+      userId: user._id,
+      dataToUpdate: { $addToSet: { uniqueKeys: uniqueKey }, OTP: "" },
+    });
 
-//     const uniqueKey = uuidv4();
-
-//     const payload = {
-//       _id: user._id,
-//       email: user.email,
-//       userName: user.userName,
-//       firstName: user.firstName,
-//       lastName: user.lastName,
-//       uniqueKey,
-//     };
-
-//     const token = JWT.sign(payload, JWT_SECRET, {
-//       expiresIn: "24h",
-//     });
-
-//     await UserService.updateUser({
-//       userId: user._id,
-//       dataToUpdate: { $addToSet: { uniqueKeys: uniqueKey }, OTP: "" },
-//     });
-
-//     res.status(200).json({
-//       message: "SUCCESS: logged in.",
-//       token,
-//     });
-//   } catch (error) {
-//     console.log(error);
-
-//     res.status(500).json({ error: "INTERNAL SERVER ERROR" });
-//   }
-// };
+    return sendResponse({token},200,res)
+});
 
 module.exports = {
   signup,
@@ -317,6 +325,5 @@ module.exports = {
   updateUser,
   getUser,
   logout,
-  
-  //   verifyOTP,
+  verifyOTP,
 };

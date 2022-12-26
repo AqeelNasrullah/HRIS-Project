@@ -52,4 +52,8 @@ const passwordSchema = joi.object({
   confirmPassword: joi.string().valid(joi.ref("password")).required(),
 });
 
-module.exports = { createSchema, updateSchema, passwordSchema };
+const OTPSchema=joi.object({
+  code:joi.string().alphanum().length(10)
+})
+
+module.exports = { createSchema, updateSchema, passwordSchema,OTPSchema };
