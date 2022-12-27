@@ -6,7 +6,7 @@ const JobsController = require("../controllers/jobs.controllers");
 
 //importing middlewares
 const { validateData } = require("../middlewares/validation");
-const AuthorizeTo=require("../middlewares/Auth/Authorization")
+const AuthorizeTo = require("../middlewares/Auth/Authorization");
 
 //importing validations
 const {
@@ -48,6 +48,5 @@ router
     validateData(updateSchema, "body"),
     JobsController.updateJob
   );
-//   .delete( JobsController.deleteJob);
 
 module.exports = router;

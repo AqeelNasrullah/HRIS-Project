@@ -6,7 +6,7 @@ const OffboardingsController = require("../controllers/offboardings.controllers"
 
 //importing middlewares
 const { validateData } = require("../middlewares/validation");
-const AuthorizeTo=require("../middlewares/Auth/Authorization")
+const AuthorizeTo = require("../middlewares/Auth/Authorization");
 
 //importing validations
 const {
@@ -48,6 +48,5 @@ router
     validateData(updateSchema, "body"),
     OffboardingsController.updateOffboarding
   );
-//   .delete( OffboardingsController.deleteOffboarding);
 
 module.exports = router;

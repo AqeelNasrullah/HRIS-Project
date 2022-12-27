@@ -8,6 +8,7 @@ const ApiFatures = require("../utils/classes/apiFeatures");
 const timeoffCreate = async (timeoff) => {
   try {
     const newTimeoff = new TimeoffsModel(timeoff);
+
     return await newTimeoff.save();
   } catch (error) {
     throw error;
@@ -18,6 +19,7 @@ const timeoffCreate = async (timeoff) => {
 const getExistingTimeoffById = async (timeoffId) => {
   try {
     const existedTimeoff = await TimeoffsModel.findById(timeoffId).lean();
+
     return existedTimeoff;
   } catch (error) {
     throw error;
@@ -44,9 +46,7 @@ const getAllTimeoffs = async (query, resultPerPage) => {
       .filter()
       .pagination(resultPerPage);
     const allTimeoffs = await apiFeatures.query;
-    if (!allTimeoffs) {
-      return null;
-    }
+
     return allTimeoffs;
   } catch (error) {
     throw error;
@@ -56,10 +56,17 @@ const getAllTimeoffs = async (query, resultPerPage) => {
 //get all benefits
 const getTimeoffsReport = async (query, resultPerPage) => {
   try {
-   
     const apiFeatures = new ApiFatures(
       TimeoffsModel.find()
-        .populate({ path: "employeeId" , select:"basicInformation.firstName basicInformation.lastName",populate:{path:"jobDescription.job", select:"jobTitle department"} }).select("-createdAt -updatedAt -__v")
+        .populate({
+          path: "employeeId",
+          select: "basicInformation.firstName basicInformation.lastName",
+          populate: {
+            path: "jobDescription.job",
+            select: "jobTitle department",
+          },
+        })
+        .select("-createdAt -updatedAt -__v")
         .lean(),
       query
     )
@@ -67,9 +74,7 @@ const getTimeoffsReport = async (query, resultPerPage) => {
       .filter()
       .pagination(resultPerPage);
     const allEmployees = await apiFeatures.query;
-    if (!allEmployees) {
-      return null;
-    }
+
     return allEmployees;
   } catch (error) {
     throw error;
@@ -83,6 +88,7 @@ const getExistingTimeoff = async (employeeId, startTime) => {
       employeeId: { $eq: employeeId },
       startTime: { $eq: new Date(startTime) },
     }).lean();
+
     return existedTimeoff;
   } catch (error) {
     throw error;
@@ -95,16 +101,8 @@ const getEmployeeTimeoff = async (employeeId) => {
     const existedTimeoff = TimeoffsModel.find({
       employeeId: { $eq: employeeId },
     }).lean();
-    return existedTimeoff;
-  } catch (error) {
-    throw error;
-  }
-};
 
-//get docs count
-const getCount = async () => {
-  try {
-    return await TimeoffsModel.countDocuments();
+    return existedTimeoff;
   } catch (error) {
     throw error;
   }
@@ -116,7 +114,6 @@ module.exports = {
   getExistingTimeoffById,
   timeoffUpdate,
   getExistingTimeoff,
-  getCount,
   getEmployeeTimeoff,
-  getTimeoffsReport
+  getTimeoffsReport,
 };

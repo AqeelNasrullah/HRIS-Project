@@ -1,9 +1,8 @@
 //importing dependencies
 const mongoose = require("mongoose");
-const {
-  OFFBOARDING_CATEGORY,
-  TASKS_STATUS,
-} = require("../../config/constants");
+
+//importing constants
+const { OFFBOARDING_CATEGORY } = require("../../config/constants");
 
 const offboardingSchema = new mongoose.Schema(
   {

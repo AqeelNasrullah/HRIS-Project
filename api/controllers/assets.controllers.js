@@ -10,10 +10,9 @@ const ErrorHandler = require("../utils/classes/errorHandler");
 const sendResponse = require("../utils/sendResponse");
 
 //importing constants
-const {ASSET_STATUS}=require("../../config/constants")
+const { ASSET_STATUS } = require("../../config/constants");
 
 //methods
-
 //creating Asset
 const createAsset = asyncErrorHandler(async (req, res, next) => {
   const asset = req.body;
@@ -42,15 +41,15 @@ const createAsset = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
   }
 
-  sendResponse({ createdAsset }, 201, res);
+  return sendResponse({ createdAsset }, 201, res);
 });
 
 //get all Assets
 const findAllAssets = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 2;
-  const allAssets = await Assets.getAllAssets(query, resultPerPage);
-  const countedAssets = await Assets.getCount();
+  const { result } = req.query;
+  const allAssets = await Assets.getAllAssets(query, result);
+  const countedAssets = allAssets.length;
   if (!allAssets) {
     return next(new ErrorHandler("Not a single Asset found", 404));
   }
@@ -90,7 +89,6 @@ const updateAsset = asyncErrorHandler(async (req, res, next) => {
 /*  ---------ASSET ASSIGNMENT ----------- */
 //assign asset
 const assign = asyncErrorHandler(async (req, res, next) => {
-
   const { _id } = req.query;
   //checking existance
   const existedAsset = await Assets.getExistingAssetById(_id);
@@ -99,11 +97,11 @@ const assign = asyncErrorHandler(async (req, res, next) => {
   }
 
   //checking availabilty to be assigned
-  if(existedAsset.status===ASSET_STATUS[1]){ 
-      return next(new ErrorHandler("Asset isn't available to assign.", 409));
-    }
+  if (existedAsset.status === ASSET_STATUS[1]) {
+    return next(new ErrorHandler("Asset isn't available to assign.", 409));
+  }
 
-  const asset=req.body;
+  const asset = req.body;
 
   //checking employee existance
   const existedEmployee = await getExistingEmployeeById(asset.employee);
@@ -111,11 +109,14 @@ const assign = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
   }
 
-  asset.assignedDate=Date.now();
+  asset.assignedDate = Date.now();
 
   //updating
   existedAsset.assignment.push(req.body);
-  const toBeUpdate = { assignment:  existedAsset.assignment,status:ASSET_STATUS[1] };
+  const toBeUpdate = {
+    assignment: existedAsset.assignment,
+    status: ASSET_STATUS[1],
+  };
   const updatedAsset = await Assets.assetUpdate(_id, toBeUpdate);
   if (!updatedAsset) {
     return next(new ErrorHandler("Updation Failed.", 500));
@@ -126,8 +127,7 @@ const assign = asyncErrorHandler(async (req, res, next) => {
 
 //update assignment
 const updateAssignment = asyncErrorHandler(async (req, res, next) => {
-
-  const {_id}=req.query
+  const { _id } = req.query;
   //checking existance
   const existedAsset = await Assets.getExistingAssetById(_id);
   if (!existedAsset) {
@@ -135,65 +135,83 @@ const updateAssignment = asyncErrorHandler(async (req, res, next) => {
   }
 
   const { assignmentId } = req.params;
-   //checking existance of assignment for same asset
-   const assignmentExistance = existedAsset.assignment?.find((assign) =>
-   assign._id.equals(assignmentId)
- );
- if (!assignmentExistance) {
-   return next(
-     new ErrorHandler(
-       "Assignment with this id has never given to this asset",
-       400
-     )
-   );
- }
+  //checking existance of assignment for same asset
+  const assignmentExistance = existedAsset.assignment?.find((assign) =>
+    assign._id.equals(assignmentId)
+  );
+  if (!assignmentExistance) {
+    return next(
+      new ErrorHandler(
+        "Assignment with this id has never given to this asset",
+        400
+      )
+    );
+  }
 
-  const asset=req.body;
+  const asset = req.body;
 
   //checking employee existance
-  if(asset.employee){
+  if (asset.employee) {
     const existedEmployee = await getExistingEmployeeById(asset.employee);
     if (!existedEmployee) {
-      return next(new ErrorHandler("Employee with given Id doesn't exists", 404));
+      return next(
+        new ErrorHandler("Employee with given Id doesn't exists", 404)
+      );
     }
   }
 
-  if(asset.returnedDate){
+  if (asset.returnedDate) {
     //date should be greater than assigned one
-    if(assignmentExistance.assignedDate.toJSON()>asset.returnedDate){
-      return next(new ErrorHandler("Returned Date should be greater than assigned date", 400));
+    if (assignmentExistance.assignedDate.toJSON() > asset.returnedDate) {
+      return next(
+        new ErrorHandler(
+          "Returned Date should be greater than assigned date",
+          400
+        )
+      );
     }
-   
+
     //date should be less than last assigned one
-    const notReturned=existedAsset.assignment.slice(-1).find(ass=>ass)
-    if(notReturned && notReturned!=assignmentExistance){
-      if(notReturned.assignedDate.toJSON()<asset.returnedDate){
-        return next(new ErrorHandler("Returned Date should be less than last assigned asset date", 400));
+    const notReturned = existedAsset.assignment.slice(-1).find((ass) => ass);
+    if (notReturned && notReturned != assignmentExistance) {
+      if (notReturned.assignedDate.toJSON() < asset.returnedDate) {
+        return next(
+          new ErrorHandler(
+            "Returned Date should be less than last assigned asset date",
+            400
+          )
+        );
       }
-    }
-    else{
-    existedAsset.status=ASSET_STATUS[0]
+    } else {
+      existedAsset.status = ASSET_STATUS[0];
     }
   }
 
-  if(asset.assignedDate){
+  if (asset.assignedDate) {
     //date should be less than returned one
-   
-    if(assignmentExistance.returnedDate?.toJSON()<asset.assignedDate){
-      return next(new ErrorHandler("Assigned Date should be less than returned date", 400));
+
+    if (assignmentExistance.returnedDate?.toJSON() < asset.assignedDate) {
+      return next(
+        new ErrorHandler("Assigned Date should be less than returned date", 400)
+      );
     }
-      }
+  }
 
   //updating
   assignmentExistance.employee = asset.employee
     ? asset.employee
     : assignmentExistance.employee;
-    assignmentExistance.returnedDate = asset.returnedDate ? asset.returnedDate : assignmentExistance.returnedDate;
-    assignmentExistance.assignedDate = asset.assignedDate
+  assignmentExistance.returnedDate = asset.returnedDate
+    ? asset.returnedDate
+    : assignmentExistance.returnedDate;
+  assignmentExistance.assignedDate = asset.assignedDate
     ? asset.assignedDate
     : assignmentExistance.assignedDate;
 
-  const toBeUpdate = { assignment:  existedAsset.assignment,status:existedAsset.status };
+  const toBeUpdate = {
+    assignment: existedAsset.assignment,
+    status: existedAsset.status,
+  };
   const updatedAsset = await Assets.assetUpdate(_id, toBeUpdate);
   if (!updatedAsset) {
     return next(new ErrorHandler("Updation Failed.", 500));
@@ -202,12 +220,10 @@ const updateAssignment = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedAsset }, 200, res);
 });
 
-
 module.exports = {
   createAsset,
   findAllAssets,
   updateAsset,
-  //   deleteAsset,
   getAsset,
   assign,
   updateAssignment,

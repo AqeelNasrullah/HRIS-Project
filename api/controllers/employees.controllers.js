@@ -18,6 +18,7 @@ const asyncErrorHandler = require("../middlewares/errors/asyncErrorHandler");
 const ErrorHandler = require("../utils/classes/errorHandler");
 const sendResponse = require("../utils/sendResponse");
 
+//importing constants
 const { EMPLOYEE_STATUS } = require("../../config/constants");
 
 //methods
@@ -84,9 +85,9 @@ const uploadProfileImage = asyncErrorHandler(async (req, res, next) => {
 //get all Employees
 const findAllEmployees = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 5;
-  const allEmployees = await Employees.getAllEmployees(query, resultPerPage);
-  const countedEmployees = await Employees.getCount();
+  const { result } = req.query;
+  const allEmployees = await Employees.getAllEmployees(query, result);
+  const countedEmployees = allEmployees.length;
   if (!allEmployees) {
     return next(new ErrorHandler("Not a single employee found", 404));
   }
@@ -688,6 +689,7 @@ const updateOnboarding = asyncErrorHandler(async (req, res, next) => {
 
   return sendResponse({ updatedEmployee }, 200, res);
 });
+
 /*  ---------EMPLOYEE OFFBOARDING INFO----------- */
 //add OffBOARDING TASKS of Employee
 const addOffboarding = asyncErrorHandler(async (req, res, next) => {
@@ -797,6 +799,7 @@ const updateOffboarding = asyncErrorHandler(async (req, res, next) => {
   taskExistance.description = req.body.description
     ? req.body.description
     : taskExistance.description;
+
   //updating
   const toBeUpdate = { offboarding: existedEmployee.offboarding };
   const updatedEmployee = await Employees.employeeUpdate(_id, toBeUpdate);
@@ -936,8 +939,6 @@ const findEmployeeBenefits = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ employee }, 200, res);
 });
 
-
-
 /*  ---------EMPLOYEE DOCUMENTS INFO----------- */
 //add document of Employee
 const addDocument = asyncErrorHandler(async (req, res, next) => {
@@ -1074,7 +1075,6 @@ module.exports = {
   addBenefit,
   updateBenefit,
   findEmployeeBenefits,
-  
   addDocument,
   updateDocument,
   findAllDocuments,

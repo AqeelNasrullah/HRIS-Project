@@ -1,4 +1,7 @@
+//importing dependencies
 const joi = require("joi");
+
+//importing constants
 const { TIMEOFF_CATEGORY, TIMEOFF_STATUS } = require("../../config/constants");
 
 const param = joi.object({
@@ -19,7 +22,7 @@ const createSchema = joi.object({
   hour: joi.number().integer().min(1).max(72).required(),
   employeeId: joi.string(),
   note: joi.string().trim(),
-  status:joi.string().valid(...TIMEOFF_STATUS)
+  status: joi.string().valid(...TIMEOFF_STATUS),
 });
 
 const updateSchema = joi.object({
@@ -33,9 +36,9 @@ const updateSchema = joi.object({
   hour: joi.number().integer().min(1).max(72),
   employeeId: joi.string(),
   note: joi.string().trim(),
-  status:joi.string().valid(...TIMEOFF_STATUS),
-  page:joi.number().integer(),
-  result:joi.number().integer()
+  status: joi.string().valid(...TIMEOFF_STATUS),
+  page: joi.number().integer(),
+  result: joi.number().integer(),
 });
 
 module.exports = { createSchema, param, updateSchema };

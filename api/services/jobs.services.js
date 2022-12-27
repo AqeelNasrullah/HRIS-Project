@@ -2,12 +2,13 @@
 const JobsModel = require("../models/jobs");
 
 //importing utils
-const ApiFatures=require("../utils/classes/apiFeatures")
+const ApiFatures = require("../utils/classes/apiFeatures");
 
 //creating Job object
 const jobCreate = async (job) => {
   try {
     const newJob = new JobsModel(job);
+
     return await newJob.save();
   } catch (error) {
     throw error;
@@ -17,7 +18,7 @@ const jobCreate = async (job) => {
 //get all Job
 const getAllJobs = async (query, resultPerPage) => {
   try {
-    const apiFeatures = new ApiFatures(JobsModel.find(), query)
+    const apiFeatures = new ApiFatures(JobsModel.find().lean(), query)
       .search()
       .filter()
       .pagination(resultPerPage);
@@ -41,8 +42,6 @@ const getExistingJobById = async (jobId) => {
 //update Job's any field
 const jobUpdate = async (jobId, toBeUpdate) => {
   try {
-    //  const error= toBeUpdate.validateSync();
-    //  console.log(error);
     return await JobsModel.findByIdAndUpdate(jobId, toBeUpdate, {
       new: true,
       runValidators: true,
@@ -62,20 +61,10 @@ const getExistingJob = async (title) => {
   }
 };
 
-//get docs count
-const getCount = async () => {
-  try {
-    return await JobsModel.countDocuments();
-  } catch (error) {
-    throw error;
-  }
-};
-
 module.exports = {
   jobCreate,
   getAllJobs,
   getExistingJobById,
   jobUpdate,
   getExistingJob,
-  getCount,
 };

@@ -1,5 +1,7 @@
 //importing dependencies
 const mongoose = require("mongoose");
+
+//importing constants
 const { BENEFITS_CATEGORY } = require("../../config/constants");
 
 const benefitSchema = new mongoose.Schema(

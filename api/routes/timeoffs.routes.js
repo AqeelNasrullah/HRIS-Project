@@ -1,4 +1,4 @@
-//adding dependenciescontroller
+//adding dependencies
 const express = require("express");
 
 //importing controller
@@ -23,7 +23,7 @@ const router = express.Router();
 
 router.post(
   "/create",
-  // AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
   validateData(createSchema, "body"),
   TimeoffsController.createTimeoff
 );
@@ -31,7 +31,7 @@ router.post(
 //report enabled filteration
 router.get(
   "/all",
-  // AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
   validateData(updateSchema, "query"),
   TimeoffsController.findAllTimeoffs
 );
@@ -39,7 +39,7 @@ router.get(
 //upcoming timeoffs
 router.get(
   "/upcoming",
-  // AuthorizeTo(SYSTEM_ROLES_ENUM[2],AuthorizeTo(SYSTEM_ROLES_ENUM[0])),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2], AuthorizeTo(SYSTEM_ROLES_ENUM[0])),
   validateData(updateSchema, "query"),
   TimeoffsController.findUpcomingTimeoffs
 );

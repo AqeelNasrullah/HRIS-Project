@@ -8,6 +8,7 @@ const ApiFatures = require("../utils/classes/apiFeatures");
 const assetCreate = async (asset) => {
   try {
     const newAsset = new AssetsModel(asset);
+
     return await newAsset.save();
   } catch (error) {
     throw error;
@@ -18,6 +19,7 @@ const assetCreate = async (asset) => {
 const getExistingAssetById = async (assetId) => {
   try {
     const existedAsset = await AssetsModel.findById(assetId).lean();
+
     return existedAsset;
   } catch (error) {
     throw error;
@@ -39,7 +41,7 @@ const assetUpdate = async (assetId, toBeUpdate) => {
 //get all Asset
 const getAllAssets = async (query, resultPerPage) => {
   try {
-    const apiFeatures = new ApiFatures(AssetsModel.find(), query)
+    const apiFeatures = new ApiFatures(AssetsModel.find().lean(), query)
       .search()
       .filter()
       .pagination(resultPerPage);
@@ -56,14 +58,20 @@ const getAllAssets = async (query, resultPerPage) => {
 //get all Assets for
 const getAssetsReport = async (query, resultPerPage) => {
   try {
-    const apiFeatures = new ApiFatures(AssetsModel.find().populate({path:"assignment.employee",select:"basicInformation.firstName"}).select("-createdAt -updatedAt -__v -status"), query)
+    const apiFeatures = new ApiFatures(
+      AssetsModel.find()
+        .populate({
+          path: "assignment.employee",
+          select: "basicInformation.firstName",
+        })
+        .select("-createdAt -updatedAt -__v -status"),
+      query
+    )
       .search()
       .filter()
       .pagination(resultPerPage);
     const allAssets = await apiFeatures.query;
-    if (!allAssets) {
-      return null;
-    }
+
     return allAssets;
   } catch (error) {
     throw error;
@@ -73,13 +81,17 @@ const getAssetsReport = async (query, resultPerPage) => {
 const getEmployeeAssets = async (id) => {
   try {
     const allAssets = await AssetsModel.find({
-      assignment: 
-      { $elemMatch: {$and:[
-        { employee: { $eq: id } } ,
-        {returnedDate:{$exists:false}}
-      ]}
+      assignment: {
+        $elemMatch: {
+          $and: [
+            { employee: { $eq: id } },
+            { returnedDate: { $exists: false } },
+          ],
+        },
       },
-    }).select("id category serialNumber description").lean();
+    })
+      .select("id category serialNumber description")
+      .lean();
     return allAssets;
   } catch (error) {
     throw error;
@@ -99,15 +111,6 @@ const getExistingAsset = async (serialNumber, category) => {
   }
 };
 
-//get docs count
-const getCount = async () => {
-  try {
-    return await AssetsModel.countDocuments();
-  } catch (error) {
-    throw error;
-  }
-};
-
 module.exports = {
   assetCreate,
   getAllAssets,
@@ -115,6 +118,5 @@ module.exports = {
   assetUpdate,
   getExistingAsset,
   getEmployeeAssets,
-  getCount,
-  getAssetsReport
+  getAssetsReport,
 };

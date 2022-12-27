@@ -1,5 +1,7 @@
 //importing dependencies
 const mongoose = require("mongoose");
+
+//importing constants
 const { ONBOARDING_CATEGORY } = require("../../config/constants");
 
 const onboardingSchema = new mongoose.Schema(

@@ -1,5 +1,7 @@
 //importing dependencies
 const mongoose = require("mongoose");
+
+//importing constants
 const { TIMEOFF_CATEGORY, TIMEOFF_STATUS } = require("../../config/constants");
 
 const timeoffSchema = new mongoose.Schema(

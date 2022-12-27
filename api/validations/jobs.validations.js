@@ -1,4 +1,4 @@
-const { number } = require("joi");
+//importing dependencies
 const joi = require("joi");
 
 const jobParam = joi.object({
@@ -27,8 +27,8 @@ const updateSchema = joi.object({
     .string()
     .regex(/^[a-f0-9]+$/)
     .length(24),
-    page:joi.number(),
-    result:joi.number(),
+  page: joi.number(),
+  result: joi.number(),
   department: joi
     .string()
     .trim()

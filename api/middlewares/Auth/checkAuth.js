@@ -1,9 +1,12 @@
 //adding dependencies
 const JWT = require("jsonwebtoken");
+
 //imporing user services
 const { getUserById } = require("../../services/users.services");
+
 //importing middlewares
 const asyncErrorHandler = require("../errors/asyncErrorHandler");
+
 //importing utils
 const ErrorHandler = require("../../utils/classes/errorHandler");
 

@@ -1,5 +1,7 @@
 //importing dependencies
 const nodeMailer = require("nodemailer");
+
+//importing middlewares
 const asyncErrorHandler = require("./errors/asyncErrorHandler");
 
 const sendEmail = asyncErrorHandler(async (options) => {

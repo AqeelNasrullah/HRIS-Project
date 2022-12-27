@@ -14,12 +14,12 @@ const sendResponse = require("../utils/sendResponse");
 const { EMPLOYEE_STATUS } = require("../../config/constants");
 
 //methods
-
 //creating Timeoff
 const createTimeoff = asyncErrorHandler(async (req, res, next) => {
   const timeoff = req.body;
   const { id } = req.query;
   timeoff.employeeId = mongoose.Types.ObjectId(id);
+
   //if emloyee doesn't exist
   if (timeoff.employeeId) {
     const existedEmployee = await getExistingEmployeeById(timeoff.employeeId);
@@ -43,7 +43,7 @@ const createTimeoff = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
   }
 
-  sendResponse({ createdTimeoff }, 201, res);
+  return sendResponse({ createdTimeoff }, 201, res);
 });
 
 //get all Timeoffs
@@ -51,10 +51,10 @@ const findAllTimeoffs = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
   const { result } = req.query;
   const allTimeoffs = await Timeoffs.getAllTimeoffs(query, result);
-  const countedTimeoffs = allTimeoffs?.length;
   if (!allTimeoffs) {
     return next(new ErrorHandler("Not a single Timeoff found", 404));
   }
+  const countedTimeoffs = allTimeoffs.length;
   return sendResponse({ countedTimeoffs, allTimeoffs }, 200, res);
 });
 
@@ -62,15 +62,22 @@ const findAllTimeoffs = asyncErrorHandler(async (req, res, next) => {
 const findUpcomingTimeoffs = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
   const { result } = req.query;
-  const allTimeoffs = await Timeoffs.getAllTimeoffs(query, result);
 
+  //getting all timeoffs
+  const allTimeoffs = await Timeoffs.getAllTimeoffs(query, result);
   if (!allTimeoffs) {
     return next(new ErrorHandler("Not a single Timeoff found", 404));
   }
+
+  //getting upcoming timeoffs
   const upcomingTimeOffs = allTimeoffs.filter(
     (time) => new Date(time.startTime) >= Date.now()
   );
-  const countedTimeoffs = upcomingTimeOffs?.length;
+  if (!upcomingTimeOffs) {
+    return next(new ErrorHandler("Not a single Timeoff found", 404));
+  }
+  const countedTimeoffs = upcomingTimeOffs.length;
+
   return sendResponse({ countedTimeoffs, upcomingTimeOffs }, 200, res);
 });
 
@@ -102,6 +109,7 @@ const updateTimeoff = asyncErrorHandler(async (req, res, next) => {
       return next(new ErrorHandler("Employee doesn't exist ", 404));
     }
   }
+
   const toBeUpdate = req.body;
   toBeUpdate.employeeId = id;
 

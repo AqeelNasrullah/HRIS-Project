@@ -2,12 +2,13 @@
 const OffboardingsModel = require("../models/offboardings");
 
 //importing utils
-const ApiFatures=require("../utils/classes/apiFeatures")
+const ApiFatures = require("../utils/classes/apiFeatures");
 
 //creating Offboarding object
 const offboardingCreate = async (offboarding) => {
   try {
     const newOffboarding = new OffboardingsModel(offboarding);
+
     return await newOffboarding.save();
   } catch (error) {
     throw error;
@@ -17,14 +18,12 @@ const offboardingCreate = async (offboarding) => {
 //get all Offboardings
 const getAllOffboardings = async (query, resultPerPage) => {
   try {
-    const apiFeatures = new ApiFatures(OffboardingsModel.find(), query)
+    const apiFeatures = new ApiFatures(OffboardingsModel.find().lean(), query)
       .search()
       .filter()
       .pagination(resultPerPage);
     const allOffboardings = await apiFeatures.query;
-    if (!allOffboardings) {
-      return null;
-    }
+
     return allOffboardings;
   } catch (error) {
     throw error;
@@ -34,7 +33,10 @@ const getAllOffboardings = async (query, resultPerPage) => {
 //finding Offboarding by id
 const getExistingOffboardingById = async (offboardingId) => {
   try {
-    const existedOffboarding = await OffboardingsModel.findById(offboardingId).lean();
+    const existedOffboarding = await OffboardingsModel.findById(
+      offboardingId
+    ).lean();
+
     return existedOffboarding;
   } catch (error) {
     throw error;
@@ -44,29 +46,28 @@ const getExistingOffboardingById = async (offboardingId) => {
 //update Offboarding's any field
 const offboardingUpdate = async (offboardingId, toBeUpdate) => {
   try {
-    return await OffboardingsModel.findByIdAndUpdate(offboardingId, toBeUpdate, {
-      new: true,
-      runValidators: true,
-    }).lean();
+    return await OffboardingsModel.findByIdAndUpdate(
+      offboardingId,
+      toBeUpdate,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).lean();
   } catch (error) {
     throw error;
   }
 };
 
 //getting Offboarding by cat and tasks
-const getExistingOffboarding = async (category,taskName) => {
+const getExistingOffboarding = async (category, taskName) => {
   try {
-    const existedOffboarding = OffboardingsModel.findOne({ category: { $eq: category },  taskName: { $eq: taskName }}).lean();
-    return existedOffboarding;
-  } catch (error) {
-    throw error;
-  }
-};
+    const existedOffboarding = OffboardingsModel.findOne({
+      category: { $eq: category },
+      taskName: { $eq: taskName },
+    }).lean();
 
-//get docs count
-const getCount = async () => {
-  try {
-    return await OffboardingsModel.countDocuments();
+    return existedOffboarding;
   } catch (error) {
     throw error;
   }
@@ -78,5 +79,4 @@ module.exports = {
   getExistingOffboardingById,
   offboardingUpdate,
   getExistingOffboarding,
-  getCount,
 };

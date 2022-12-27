@@ -1,4 +1,7 @@
+//importing dependencies
 const joi = require("joi");
+
+//importing constants
 const { ASSET_CATEGORY } = require("../../config/constants");
 
 const param = joi.object({
@@ -17,13 +20,18 @@ const query = joi.object({
     .required(),
 });
 
+//asset info
 const createAsset = joi.object({
   category: joi
     .string()
     .alphanum()
     .valid(...ASSET_CATEGORY)
     .required(),
-  description: joi.string().max(50).regex(/^[A-Za-z0-9 ]+$/).trim(),
+  description: joi
+    .string()
+    .max(50)
+    .regex(/^[A-Za-z0-9 ]+$/)
+    .trim(),
   serialNumber: joi.string().max(25).required(),
 });
 
@@ -36,16 +44,23 @@ const updateAsset = joi.object({
     .string()
     .alphanum()
     .valid(...ASSET_CATEGORY),
-    description: joi.string().max(50).regex(/^[A-Za-z0-9 ]+$/).trim(),
+  description: joi
+    .string()
+    .max(50)
+    .regex(/^[A-Za-z0-9 ]+$/)
+    .trim(),
   serialNumber: joi.string().max(25),
+  result: joi.number().integer(),
+  page: joi.number().integer(),
 });
 
+//asset assignment
 const assignmentAdd = joi.object({
   employee: joi
     .string()
     .regex(/^[a-f0-9]+$/)
     .length(24)
-    .required()
+    .required(),
 });
 
 const assignmentUpdate = joi.object({

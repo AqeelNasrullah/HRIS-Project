@@ -23,7 +23,7 @@ class ApiFatures {
     //converting to string
     let queryJson = JSON.stringify(filteredQuery);
     queryJson = queryJson.replace(/\b(lt|lte|gt|gte)\b/g, (key) => `$${key}`);
-    
+
     this.query = this.query.find(JSON.parse(queryJson));
     return this;
   }

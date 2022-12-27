@@ -5,7 +5,7 @@ const express = require("express");
 const upload = require("../middlewares/multer");
 const { validateData } = require("../middlewares/validation");
 const documentUpload = require("../middlewares/documentMulter");
-const AuthorizeTo=require("../middlewares/Auth/Authorization")
+const AuthorizeTo = require("../middlewares/Auth/Authorization");
 
 //importing validations
 const EmployeesValidation = require("../validations/employees.validations");
@@ -18,7 +18,7 @@ const { onboardingParam } = require("../validations/onboardings.validations");
 const EmployeesController = require("../controllers/Employees.controllers");
 
 //importing constants
-const {SYSTEM_ROLES_ENUM}=require("../../config/constants")
+const { SYSTEM_ROLES_ENUM } = require("../../config/constants");
 
 //initializing route
 const router = express.Router();
@@ -139,7 +139,7 @@ router.patch(
 //jobs,employement,compensation
 router.get(
   "/jobs",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[1],SYSTEM_ROLES_ENUM[0]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[1], SYSTEM_ROLES_ENUM[0]),
   validateData(EmployeesValidation.querySchema, "query"),
   EmployeesController.findAllJobs
 );
@@ -147,7 +147,7 @@ router.get(
 //onboarding tasks routes
 router.post(
   "/onboarding/add",
-  // AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
   validateData(EmployeesValidation.querySchema, "query"),
   validateData(EmployeesValidation.onboardingAddSchema, "body"),
   EmployeesController.addOnboarding
@@ -165,7 +165,7 @@ router.patch(
 //offboarding tasks routes
 router.post(
   "/offboarding/add",
-  // AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2]),
   validateData(EmployeesValidation.querySchema, "query"),
   validateData(EmployeesValidation.offboardingAddSchema, "body"),
   EmployeesController.addOffboarding
@@ -183,7 +183,7 @@ router.patch(
 //onboarding and offboarding tasks
 router.get(
   "/tasks",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[2],SYSTEM_ROLES_ENUM[0]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2], SYSTEM_ROLES_ENUM[0]),
   validateData(EmployeesValidation.querySchema, "query"),
   EmployeesController.findAllTasks
 );
@@ -208,7 +208,7 @@ router.patch(
 
 router.get(
   "/benefits",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[1],SYSTEM_ROLES_ENUM[0]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[1], SYSTEM_ROLES_ENUM[0]),
   validateData(EmployeesValidation.querySchema, "query"),
   EmployeesController.findEmployeeBenefits
 );
@@ -232,7 +232,7 @@ router.patch(
 
 router.get(
   "/documents",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[2],SYSTEM_ROLES_ENUM[0]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2], SYSTEM_ROLES_ENUM[0]),
   validateData(EmployeesValidation.querySchema, "query"),
   EmployeesController.findAllDocuments
 );
@@ -240,7 +240,7 @@ router.get(
 //assets routes
 router.get(
   "/assets",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[3],SYSTEM_ROLES_ENUM[0]),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[3], SYSTEM_ROLES_ENUM[0]),
   validateData(EmployeesValidation.querySchema, "query"),
   EmployeesController.getEmployeeAseet
 );
@@ -248,7 +248,7 @@ router.get(
 //timeoff routes
 router.get(
   "/timeoffs",
-  AuthorizeTo(SYSTEM_ROLES_ENUM[2],AuthorizeTo(SYSTEM_ROLES_ENUM[0]),),
+  AuthorizeTo(SYSTEM_ROLES_ENUM[2], AuthorizeTo(SYSTEM_ROLES_ENUM[0])),
   validateData(EmployeesValidation.querySchema, "query"),
   EmployeesController.getEmployeeTimeoffs
 );

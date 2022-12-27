@@ -1,56 +1,57 @@
-
 //importing dependencies
-const mongoose = require('mongoose')
-const { SYSTEM_ROLES_ENUM } = require('../../config/constants')
+const mongoose = require("mongoose");
+
+//importing constants
+const { SYSTEM_ROLES_ENUM } = require("../../config/constants");
 
 const usersSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: [true,"Must provide user first name"],
-      trim: true
+      required: [true, "Must provide user first name"],
+      trim: true,
     },
     lastName: {
       type: String,
-      required:[true,"Must provide user last name"],
-      trim: true
+      required: [true, "Must provide user last name"],
+      trim: true,
     },
     employee: {
       type: mongoose.Types.ObjectId,
-      ref:'Employee'
+      ref: "Employee",
     },
     email: {
       type: String,
-      required:[true,"Must provide user email"],
+      required: [true, "Must provide user email"],
       unique: true,
     },
     phoneNumber: {
       type: String,
-      required:true
+      required: true,
     },
     password: {
       type: String,
-      required:[true,"Must provide user last name"],
+      required: [true, "Must provide user last name"],
       // maxLength:[12,"Please provide atmost 12 chracters password"],
     },
     uniqueKeys: {
-      type: [String]
+      type: [String],
     },
     OTP: {
-      type: String
+      type: String,
     },
     systemRole: {
       type: String,
-      enum: SYSTEM_ROLES_ENUM
+      enum: SYSTEM_ROLES_ENUM,
     },
-    resetPasswordToken: {type:String},
-    resetPaswordExpire: {type:Date},
+    resetPasswordToken: { type: String },
+    resetPaswordExpire: { type: Date },
   },
   {
     timestamps: true,
     strict: true,
-    collection: 'users'
+    collection: "users",
   }
-)
+);
 
-module.exports = mongoose.model('User', usersSchema)
+module.exports = mongoose.model("User", usersSchema);

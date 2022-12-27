@@ -1,19 +1,21 @@
 //importing dependencies
 const mongoose = require("mongoose");
+
+//importing constants
 const { ASSET_CATEGORY, ASSET_STATUS } = require("../../config/constants");
 
 const assetSchema = new mongoose.Schema(
   {
     category: {
       type: String,
-      enum:ASSET_CATEGORY
+      enum: ASSET_CATEGORY,
     },
     description: {
-      type: String
+      type: String,
     },
     serialNumber: {
       type: String,
-      maxLength:[25,"please provide atmost 5"]
+      maxLength: [25, "please provide atmost 5"],
     },
     assignment: [
       {

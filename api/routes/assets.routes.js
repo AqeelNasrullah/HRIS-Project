@@ -38,7 +38,6 @@ router
     AssetsController.updateAsset
   );
 
-
 //assignment routes
 router.post(
   "/assignment",

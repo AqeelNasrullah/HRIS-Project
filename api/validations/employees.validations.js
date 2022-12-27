@@ -1,4 +1,7 @@
+//importing dependencies
 const joi = require("joi");
+
+//importing constants
 const {
   EMPLOYEE_GENDER,
   EMPLOYEE_MARITAL_STATUS,
@@ -16,6 +19,7 @@ const {
   DOCUMENT_CATEGORY,
 } = require("../../config/constants");
 
+//personal info
 const createSchema = joi.object({
   hireDate: joi.date().iso(),
   basicInformation: joi.object({
@@ -65,7 +69,10 @@ const createSchema = joi.object({
   }),
   education: joi.array().items(
     joi.object({
-      institute: joi.string().regex(/^[A-Za-z ]+$/).trim(),
+      institute: joi
+        .string()
+        .regex(/^[A-Za-z ]+$/)
+        .trim(),
       degree: joi.string().valid(...EMPLOYEE_DEGREE),
       major: joi.string().trim(),
       CGPA: joi.number().precision(2).strict(),
@@ -122,7 +129,10 @@ const updateSchema = joi.object({
   }),
   education: joi.array().items(
     joi.object({
-      institute: joi.string().regex(/^[A-Za-z ]+$/).trim(),
+      institute: joi
+        .string()
+        .regex(/^[A-Za-z ]+$/)
+        .trim(),
       degree: joi.string().valid(...EMPLOYEE_DEGREE),
       major: joi.string().trim(),
       CGPA: joi.number().precision(2).strict(),
@@ -134,16 +144,26 @@ const updateSchema = joi.object({
 
 //education validations
 const addEducation = joi.object({
-  institute: joi.string().regex(/^[A-Za-z ]+$/).trim().required(),
-  degree: joi.string().valid(...EMPLOYEE_DEGREE).required(),
-      major: joi.string().trim().required(),
-      CGPA: joi.number().precision(2).strict(),
-      startDate: joi.date().iso().required(),
-      endDate: joi.date().iso().required(),
+  institute: joi
+    .string()
+    .regex(/^[A-Za-z ]+$/)
+    .trim()
+    .required(),
+  degree: joi
+    .string()
+    .valid(...EMPLOYEE_DEGREE)
+    .required(),
+  major: joi.string().trim().required(),
+  CGPA: joi.number().precision(2).strict(),
+  startDate: joi.date().iso().required(),
+  endDate: joi.date().iso().required(),
 });
 
 const updateEducation = joi.object({
-  institute: joi.string().regex(/^[A-Za-z ]+$/).trim(),
+  institute: joi
+    .string()
+    .regex(/^[A-Za-z ]+$/)
+    .trim(),
   degree: joi.string().valid(...EMPLOYEE_DEGREE),
   major: joi.string().trim(),
   CGPA: joi.number().precision(2).strict(),
@@ -151,28 +171,22 @@ const updateEducation = joi.object({
   endDate: joi.date().iso(),
 });
 
-const educationParam=joi.object({
+const educationParam = joi.object({
   educationId: joi
-  .string()
-  .regex(/^[a-f0-9]+$/)
-  .length(24).required(),
-})
+    .string()
+    .regex(/^[a-f0-9]+$/)
+    .length(24)
+    .required(),
+});
 
+//query params
 const querySchema = joi.object({
   _id: joi
     .string()
     .regex(/^[a-f0-9]+$/)
-    .length(24).required(),
-    category:joi.string().valid(...DOCUMENT_CATEGORY)
-});
-
-const benefitsReportSchema = joi.object({
-  _id: joi
-    .string()
-    .regex(/^[a-f0-9]+$/),
-    result:joi.number().integer(),
-    page:joi.number().integer()
-    
+    .length(24)
+    .required(),
+  category: joi.string().valid(...DOCUMENT_CATEGORY),
 });
 
 //jobs validations
@@ -236,12 +250,13 @@ const compensationUpdateSchema = joi.object({
   comment: joi.string().trim().max(100),
 });
 
-const compensationParam=joi.object({
+const compensationParam = joi.object({
   compensationId: joi
-  .string()
-  .regex(/^[a-f0-9]+$/)
-  .length(24).required(),
-})
+    .string()
+    .regex(/^[a-f0-9]+$/)
+    .length(24)
+    .required(),
+});
 
 //employment validations
 const employmentAddSchema = joi.object({
@@ -329,20 +344,25 @@ const benefitUpdateSchema = joi.object({
 });
 
 //documents validation
-const documentAddSchema=joi.object({
+const documentAddSchema = joi.object({
   _id: joi
-  .string()
-  .regex(/^[a-f0-9]+$/)
-  .length(24).required(),
-  category:joi.string().valid(...DOCUMENT_CATEGORY).required()
-})
+    .string()
+    .regex(/^[a-f0-9]+$/)
+    .length(24)
+    .required(),
+  category: joi
+    .string()
+    .valid(...DOCUMENT_CATEGORY)
+    .required(),
+});
 
-const documentParam=joi.object({
+const documentParam = joi.object({
   documentId: joi
-  .string()
-  .regex(/^[a-f0-9]+$/)
-  .length(24).required(),
-})
+    .string()
+    .regex(/^[a-f0-9]+$/)
+    .length(24)
+    .required(),
+});
 
 module.exports = {
   createSchema,
@@ -366,5 +386,4 @@ module.exports = {
   addEducation,
   updateEducation,
   educationParam,
-  benefitsReportSchema
 };

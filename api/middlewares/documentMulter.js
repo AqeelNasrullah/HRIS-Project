@@ -1,4 +1,7 @@
+//importing dependencies
 const multer = require("multer");
+
+//imporrting classes
 const ErrorHandler = require("../utils/classes/errorHandler");
 
 //setting storage option

@@ -2,8 +2,9 @@
 const BenefitsModel = require("../models/benefits");
 
 //importing utils
-const ApiFatures=require("../utils/classes/apiFeatures")
+const ApiFatures = require("../utils/classes/apiFeatures");
 
+//methods
 //creating Benefit object
 const benefitCreate = async (benefit) => {
   try {
@@ -17,14 +18,11 @@ const benefitCreate = async (benefit) => {
 //get all Benefit
 const getAllBenefits = async (query, resultPerPage) => {
   try {
-    const apiFeatures = new ApiFatures(BenefitsModel.find(), query)
+    const apiFeatures = new ApiFatures(BenefitsModel.find().lean(), query)
       .search()
       .filter()
       .pagination(resultPerPage);
     const allBenefits = await apiFeatures.query;
-    if (!allBenefits) {
-      return null;
-    }
     return allBenefits;
   } catch (error) {
     throw error;
@@ -54,19 +52,13 @@ const benefitUpdate = async (benefitId, toBeUpdate) => {
 };
 
 //getting Benefit by title
-const getExistingBenefit = async (category,title) => {
+const getExistingBenefit = async (category, title) => {
   try {
-    const existedBenefit = BenefitsModel.findOne({ category: { $eq: category },title: { $eq: title } }).lean();
+    const existedBenefit = BenefitsModel.findOne({
+      category: { $eq: category },
+      title: { $eq: title },
+    }).lean();
     return existedBenefit;
-  } catch (error) {
-    throw error;
-  }
-};
-
-//get docs count
-const getCount = async () => {
-  try {
-    return await BenefitsModel.countDocuments();
   } catch (error) {
     throw error;
   }
@@ -78,5 +70,4 @@ module.exports = {
   getExistingBenefitById,
   benefitUpdate,
   getExistingBenefit,
-  getCount,
 };

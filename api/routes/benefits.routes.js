@@ -48,6 +48,5 @@ router
     validateData(updateSchema, "body"),
     BenefitsController.updateBenefit
   );
-//   .delete( BenefitsController.deleteBenefit);
 
 module.exports = router;

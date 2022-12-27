@@ -1,4 +1,7 @@
+//importing dependencies
 const joi = require("joi");
+
+//importing constants
 const { SYSTEM_ROLES_ENUM } = require("../../config/constants");
 
 const createSchema = joi.object({
@@ -52,8 +55,8 @@ const passwordSchema = joi.object({
   confirmPassword: joi.string().valid(joi.ref("password")).required(),
 });
 
-const OTPSchema=joi.object({
-  code:joi.string().alphanum().length(10)
-})
+const OTPSchema = joi.object({
+  code: joi.string().alphanum().length(10),
+});
 
-module.exports = { createSchema, updateSchema, passwordSchema,OTPSchema };
+module.exports = { createSchema, updateSchema, passwordSchema, OTPSchema };

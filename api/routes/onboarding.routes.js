@@ -48,6 +48,5 @@ router
     validateData(updateSchema, "body"),
     OnboardingsController.updateOnboarding
   );
-//   .delete( OnboardingsController.deleteOnboarding);
 
 module.exports = router;

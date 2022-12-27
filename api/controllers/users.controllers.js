@@ -17,12 +17,6 @@ const asyncErrorHandler = require("../middlewares/errors/asyncErrorHandler");
 //importing utils
 const sendResponse = require("../utils/sendResponse");
 
-const {
-  JWT_SECRET,
-  TWILIO_ACCOUNT_SID,
-  TWILIO_ACCOUNT_AUTH_TOKEN,
-  TWILIO_VERIFY_SID,
-} = require("../../config/credentials");
 const ErrorHandler = require("../utils/classes/errorHandler");
 
 const client = require("twilio")(
@@ -91,23 +85,25 @@ const login = asyncErrorHandler(async (req, res, next) => {
     .createHash("sha256")
     .update(loginToken)
     .digest("hex");
-    //setting expire ResetPassword
-    const resetLoginExpire = Date.now() + 15 * 60 * 1000;
-    console.log(resetLoginToken);
+
+  //setting expire ResetPassword
+  const resetLoginExpire = Date.now() + 15 * 60 * 1000;
 
   const toBeUpdate = {
     resetPasswordToken: resetLoginToken,
     resetPaswordExpire: resetLoginExpire,
   };
 
-  const updatedUser = await Users.updateUser({userId:user._id, toBeUpdate});
+  const updatedUser = await Users.updateUser({ userId: user._id, toBeUpdate });
   if (!updatedUser) {
     return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
   }
+
   const verificationUrl = `${req.protocol}://${req.get(
     "host"
   )}/api/users/verification/${loginToken}/${updatedUser._id}`;
   const message = `Enter your phone verification code on this site : -  \n\n${verificationUrl}\n\n If you didn't request this email, then ignore it  :)`;
+
   try {
     sendEmail({
       email: user.email,
@@ -119,34 +115,38 @@ const login = asyncErrorHandler(async (req, res, next) => {
       resetPasswordToken: undefined,
       resetPaswordExpire: undefined,
     };
-    const updatedUser = await Users.updateUser({userId:user._id, toBeUpdate});
+    const updatedUser = await Users.updateUser({
+      userId: user._id,
+      toBeUpdate,
+    });
     if (!updatedUser) {
       return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
     }
     return next(new ErrorHandler(error.message, 500));
   }
 
-//sending OTP
-const otpBuff = await randomBytes(5);
+  //sending OTP
+  const otpBuff = await randomBytes(5);
 
-const OTP = otpBuff.toString("hex");
+  const OTP = otpBuff.toString("hex");
 
-console.log(`${otpBuff.length} bytes of random data: ${OTP}`);
+  await client.messages.create({
+    body: OTP,
+    messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
+    to: user.phoneNumber,
+  });
 
-const sentSMS = await client.messages.create({
-  body: OTP,
-  messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
-  to: user.phoneNumber,
+  await Users.updateUser({
+    userId: user._id,
+    dataToUpdate: { OTP },
+  });
+
+  return sendResponse(
+    { message: `Email sent to ${user.email} successfully` },
+    200,
+    res
+  );
 });
-
-const updatesUser = await Users.updateUser({
-  userId: user._id,
-  dataToUpdate: { OTP },
-});
-
-  return sendResponse({message:`Email sent to ${user.email} successfully`},200,res)
-});
-
 
 //forget password
 const forgetPassword = asyncErrorHandler(async (req, res, next) => {
@@ -263,8 +263,6 @@ const logout = asyncErrorHandler(async (req, res, next) => {
   const { token } = req;
 
   const userFound = await Users.getUserById(token._id);
-
-  console.log(token.uniqueKey);
   if (!userFound.uniqueKeys?.includes(token.uniqueKey)) {
     return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
   }
@@ -272,6 +270,7 @@ const logout = asyncErrorHandler(async (req, res, next) => {
     userId: token._id,
     dataToUpdate: { uniqueKeys: [] },
   });
+
   return sendResponse(null, 200, res);
 });
 
@@ -287,34 +286,34 @@ const getUser = asyncErrorHandler(async (req, res, next) => {
   return sendResponse(existedUser, 200, res);
 });
 
-const verifyOTP =asyncErrorHandler( async (req, res,next) => {
-    const { code } = req.body;
-    const { userId } = req.params;
-    const user = await Users.verifyOTP({ userId,code });
-    if (!user) {
-      return next(new ErrorHandler("Verification failed!",401)) ;
-    }
+const verifyOTP = asyncErrorHandler(async (req, res, next) => {
+  const { code } = req.body;
+  const { userId } = req.params;
+  const user = await Users.verifyOTP({ userId, code });
+  if (!user) {
+    return next(new ErrorHandler("Verification failed!", 401));
+  }
 
-    const uniqueKey = uuidv4();
-    const payload = {
-      _id: user._id,
-      email: user.email,
-      userName: user.userName,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      uniqueKey,
-    };
+  const uniqueKey = uuidv4();
+  const payload = {
+    _id: user._id,
+    email: user.email,
+    userName: user.userName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    uniqueKey,
+  };
 
-    const token = JWT.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "24h",
-    });
+  const token = JWT.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: "24h",
+  });
 
-    await Users.updateUser({
-      userId: user._id,
-      dataToUpdate: { $addToSet: { uniqueKeys: uniqueKey }, OTP: "" },
-    });
+  await Users.updateUser({
+    userId: user._id,
+    dataToUpdate: { $addToSet: { uniqueKeys: uniqueKey }, OTP: "" },
+  });
 
-    return sendResponse({token},200,res)
+  return sendResponse({ token }, 200, res);
 });
 
 module.exports = {

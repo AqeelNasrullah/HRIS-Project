@@ -1,5 +1,7 @@
 //importing dependencies
 const mongoose = require("mongoose");
+
+//importing constants
 const {
   EMPLOYEE_STATUS,
   EMPLOYEE_GENDER,
@@ -14,7 +16,7 @@ const {
   EMPLOYMENT_STATUS,
   TASKS_STATUS,
   BENEFITS_STATUS,
-  DOCUMENT_CATEGORY
+  DOCUMENT_CATEGORY,
 } = require("../../config/constants");
 
 const employeeSchema = new mongoose.Schema(
@@ -182,12 +184,12 @@ const employeeSchema = new mongoose.Schema(
         status: {
           type: String,
           enum: TASKS_STATUS,
-          default:TASKS_STATUS[0]
+          default: TASKS_STATUS[0],
         },
-        description:{
-          type:String,
-          trim:true
-        }
+        description: {
+          type: String,
+          trim: true,
+        },
       },
     ],
     offboarding: [
@@ -202,12 +204,12 @@ const employeeSchema = new mongoose.Schema(
         status: {
           type: String,
           enum: TASKS_STATUS,
-          default:TASKS_STATUS[0]
+          default: TASKS_STATUS[0],
         },
-        description:{
-          type:String,
-          trim:true
-        }
+        description: {
+          type: String,
+          trim: true,
+        },
       },
     ],
     status: {
@@ -233,7 +235,7 @@ const employeeSchema = new mongoose.Schema(
         },
       },
     ],
-    documents:[
+    documents: [
       {
         category: {
           type: String,
@@ -241,9 +243,9 @@ const employeeSchema = new mongoose.Schema(
         },
         documentUrl: {
           type: String,
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   {
     timestamps: true,

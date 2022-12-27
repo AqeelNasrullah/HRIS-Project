@@ -1,4 +1,7 @@
+//importing dependencies
 const joi = require("joi");
+
+//importing constants
 const { ONBOARDING_CATEGORY } = require("../../config/constants");
 
 const onboardingParam = joi.object({
@@ -28,6 +31,8 @@ const updateSchema = joi.object({
   taskName: joi.string().trim(),
   assignedTo: joi.string(),
   due: joi.string().trim(),
+  result: joi.number().integer(),
+  page: joi.number().integer(),
 });
 
 module.exports = { createSchema, onboardingParam, updateSchema };

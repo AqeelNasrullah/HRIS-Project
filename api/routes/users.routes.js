@@ -12,7 +12,8 @@ const { validateData } = require("../middlewares/validation");
 const {
   createSchema,
   updateSchema,
-  passwordSchema,OTPSchema
+  passwordSchema,
+  OTPSchema,
 } = require("../validations/users.validations");
 
 const router = express.Router();
@@ -38,8 +39,6 @@ router.put(
   validateData(OTPSchema, "body"),
   UsersController.verifyOTP
 );
-
-// router.post('/verify-OTP/:userId', UserController.verifyOTP)
 
 //update me
 router.patch(

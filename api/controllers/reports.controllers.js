@@ -1,6 +1,8 @@
 //importing services
-const Reports = require("../services/reports.services");
-const { getAllBenefits,getAllEmployements } = require("../services/employee.services");
+const {
+  getAllBenefits,
+  getAllEmployements,
+} = require("../services/employee.services");
 const { getAssetsReport } = require("../services/assets.services");
 const { getTimeoffsReport } = require("../services/timeoffs.services");
 
@@ -11,10 +13,7 @@ const asyncErrorHandler = require("../middlewares/errors/asyncErrorHandler");
 const ErrorHandler = require("../utils/classes/errorHandler");
 const sendResponse = require("../utils/sendResponse");
 
-//methods
-
-//reports
-
+//methods reports
 //get all benefits
 const benefitsReport = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
@@ -30,7 +29,7 @@ const benefitsReport = asyncErrorHandler(async (req, res, next) => {
     const benefits = allBenefits.filter((emp) =>
       emp.jobDescription
         .slice(-1)
-        .find((j) => j.job.jobTitle == req.query.jobTitle)
+        .find((jobDes) => jobDes.job.jobTitle == req.query.jobTitle)
     );
     if (!benefits) {
       return next(
@@ -69,6 +68,7 @@ const benefitsReport = asyncErrorHandler(async (req, res, next) => {
       res
     );
   }
+
   return sendResponse({ countedBenefits, allBenefits }, 200, res);
 });
 
@@ -81,6 +81,7 @@ const assetsReports = asyncErrorHandler(async (req, res, next) => {
   if (!allAssets) {
     return next(new ErrorHandler("Not a single Asset found", 404));
   }
+
   return sendResponse({ countedAssets, allAssets }, 200, res);
 });
 
@@ -91,7 +92,7 @@ const timeoffsReport = asyncErrorHandler(async (req, res, next) => {
   const allTimeoffs = await getTimeoffsReport(query, result);
   const countedTimeoffs = allTimeoffs.length;
   if (!allTimeoffs) {
-    return next(new ErrorHandler("Not a single benefit found", 404));
+    return next(new ErrorHandler("Not a single timeoff found", 404));
   }
 
   //filter by job title
@@ -99,12 +100,12 @@ const timeoffsReport = asyncErrorHandler(async (req, res, next) => {
     const timeoffs = allTimeoffs.filter((time) =>
       time.employeeId.jobDescription
         .slice(-1)
-        .find((j) => j.job.jobTitle == req.query.jobTitle)
+        .find((jobDes) => jobDes.job.jobTitle == req.query.jobTitle)
     );
     if (!timeoffs) {
       return next(
         new ErrorHandler(
-          "Not a single timeoffs found with provide jobTitle",
+          "Not a single timeoffs found with provided jobTitle",
           404
         )
       );
@@ -118,7 +119,7 @@ const timeoffsReport = asyncErrorHandler(async (req, res, next) => {
   }
   //filter by category
   if (req.query.category) {
-    const benefits = allBenefits.filter((emp) =>
+    const benefits = allTimeoffs.filter((emp) =>
       emp.benefits.find(
         (benefit) => benefit.benefitId.category == req.query.category
       )
@@ -138,26 +139,26 @@ const timeoffsReport = asyncErrorHandler(async (req, res, next) => {
       res
     );
   }
+
   return sendResponse({ countedTimeoffs, allTimeoffs }, 200, res);
 });
 
 //get all employement salary
 const salaryReport = asyncErrorHandler(async (req, res, next) => {
-    const query = req.query;
-    const { result } = req.query;
-    const employes= await getAllEmployements(query, result);
-    const countedEmployees = employes.length;
-    if (!employes) {
-      return next(new ErrorHandler("Not a single employee found", 404));
-    }
-  
- 
-    return sendResponse({ countedEmployees, employes }, 200, res);
-  });
+  const query = req.query;
+  const { result } = req.query;
+  const employes = await getAllEmployements(query, result);
+  const countedEmployees = employes.length;
+  if (!employes) {
+    return next(new ErrorHandler("Not a single employee found", 404));
+  }
+
+  return sendResponse({ countedEmployees, employes }, 200, res);
+});
 
 module.exports = {
   benefitsReport,
   assetsReports,
   timeoffsReport,
-  salaryReport
+  salaryReport,
 };

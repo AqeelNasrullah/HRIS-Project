@@ -5,7 +5,6 @@ const EmployeesModel = require("../models/employees");
 //importing utils
 const ApiFatures = require("../utils/classes/apiFeatures");
 
-
 //creating Employee object
 const employeeCreate = async (employee) => {
   try {
@@ -20,18 +19,18 @@ const employeeCreate = async (employee) => {
 const getAllEmployees = async (query, resultPerPage) => {
   try {
     const apiFeatures = new ApiFatures(
-      EmployeesModel.find().select(
-        "hireDate profileImage basicInformation address contact education"
-      ),
+      EmployeesModel.find()
+        .lean()
+        .select(
+          "hireDate profileImage basicInformation address contact education"
+        ),
       query
     )
       .search()
       .filter()
       .pagination(resultPerPage);
     const allEmployees = await apiFeatures.query;
-    if (!allEmployees) {
-      return null;
-    }
+
     return allEmployees;
   } catch (error) {
     throw error;
@@ -118,15 +117,6 @@ const getExistingHR = async (job) => {
   }
 };
 
-//get docs count
-const getCount = async () => {
-  try {
-    return await EmployeesModel.countDocuments();
-  } catch (error) {
-    throw error;
-  }
-};
-
 //get all jobs of employee
 const getAllJobs = async (_id) => {
   try {
@@ -164,10 +154,13 @@ const getEmployeeBenefits = async (_id) => {
 //get all benefits
 const getAllBenefits = async (query, resultPerPage) => {
   try {
-   
     const apiFeatures = new ApiFatures(
       EmployeesModel.find()
-        .populate({ path: "benefits.benefitId jobDescription.job" , select:"title category amount jobTitle" }).select("basicInformation.firstName benefits.status")
+        .populate({
+          path: "benefits.benefitId jobDescription.job",
+          select: "title category amount jobTitle",
+        })
+        .select("basicInformation.firstName benefits.status")
         .lean(),
       query
     )
@@ -197,9 +190,11 @@ const getAllDocuments = async (_id) => {
 //get all benefits
 const getAllEmployements = async (query, resultPerPage) => {
   try {
-   
     const apiFeatures = new ApiFatures(
-      EmployeesModel.find().select("basicInformation.firstName basicInformation.lastName compensation")
+      EmployeesModel.find()
+        .select(
+          "basicInformation.firstName basicInformation.lastName compensation"
+        )
         .lean(),
       query
     )
@@ -207,16 +202,12 @@ const getAllEmployements = async (query, resultPerPage) => {
       .filter()
       .pagination(resultPerPage);
     const allEmployees = await apiFeatures.query;
-    if (!allEmployees) {
-      return null;
-    }
+
     return allEmployees;
   } catch (error) {
     throw error;
   }
 };
-
-
 
 module.exports = {
   employeeCreate,
@@ -226,12 +217,11 @@ module.exports = {
   getExistingEmployeeById,
   employeeUpdate,
   getExistingEmployee,
-  getCount,
   getExistingHR,
   getAllJobs,
   getAllTasks,
   getAllDocuments,
   getEmployeeBenefits,
   getAllBenefits,
-  getAllEmployements
+  getAllEmployements,
 };

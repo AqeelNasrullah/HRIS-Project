@@ -11,7 +11,6 @@ const sendResponse = require("../utils/sendResponse");
 const { EMPLOYEE_STATUS } = require("../../config/constants");
 
 //methods
-
 //creating Offboarding
 const createOffboarding = asyncErrorHandler(async (req, res, next) => {
   const offboarding = req.body;
@@ -21,6 +20,7 @@ const createOffboarding = asyncErrorHandler(async (req, res, next) => {
     const existedEmployee = await getExistingEmployeeById(
       offboarding.assignedTo
     );
+
     if (!existedEmployee || existedEmployee.status === EMPLOYEE_STATUS[1]) {
       return next(
         new ErrorHandler("Employee doesn't exist to perform that task", 404)
@@ -33,6 +33,7 @@ const createOffboarding = asyncErrorHandler(async (req, res, next) => {
     offboarding.category,
     offboarding.taskName
   );
+
   if (existedOffboarding) {
     return next(
       new ErrorHandler(
@@ -48,19 +49,19 @@ const createOffboarding = asyncErrorHandler(async (req, res, next) => {
     return next(new ErrorHandler("INTERNAL SERVER ERROR", 500));
   }
 
-  sendResponse({ createdOffboarding }, 201, res);
+  return sendResponse({ createdOffboarding }, 201, res);
 });
 
 //get all Offboardings
 const findAllOffboardings = asyncErrorHandler(async (req, res, next) => {
   const query = req.query;
-  const resultPerPage = 2;
-  const allOffboardings = await Offboardings.getAllOffboardings(query, resultPerPage);
-  const countedOffboardings = await Offboardings.getCount();
+  const { result } = req.query;
+  const allOffboardings = await Offboardings.getAllOffboardings(query, result);
+  const countedOffboardings = allOffboardings.length;
   if (!allOffboardings) {
-  return  next(new ErrorHandler("Not a single Offboarding found", 404));
+    return next(new ErrorHandler("Not a single Offboarding found", 404));
   }
-  return sendResponse({countedOffboardings,allOffboardings},200,res)
+  return sendResponse({ countedOffboardings, allOffboardings }, 200, res);
 });
 
 //get Offboarding
@@ -69,6 +70,7 @@ const getOffboarding = asyncErrorHandler(async (req, res, next) => {
   const existedOffboarding = await Offboardings.getExistingOffboardingById(
     offboardingId
   );
+
   if (!existedOffboarding) {
     return next(
       new ErrorHandler("Offboarding with given Id doesn't exists", 404)
@@ -130,25 +132,9 @@ const updateOffboarding = asyncErrorHandler(async (req, res, next) => {
   return sendResponse({ updatedOffboarding }, 200, res);
 });
 
-// // remove Offboarding
-// const deleteOffboarding = asyncErrorHandler(async (req, res, next) => {
-//   const { offboardingId } = req.params;
-//   //checing existance
-//   const existedOffboarding = await Offboardings.getExistingOffboardingById(offboardingId);
-//   if (!existedOffboarding) {
-//     return next(new ErrorHandler("Offboarding with given Id doesn't exists", 404));
-//   }
-
-//   //removing
-//   const toBeUpdate = { status: Offboarding_STATUS[1] };
-//   const deletedOffboarding = await Offboardings.OffboardingUpdate(offboardingId, toBeUpdate);
-//   return sendResponse({ deletedOffboarding }, 200, res);
-// });
-
 module.exports = {
   createOffboarding,
   updateOffboarding,
   findAllOffboardings,
-  //   deleteOffboarding,
   getOffboarding,
 };

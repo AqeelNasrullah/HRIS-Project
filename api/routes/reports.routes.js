@@ -5,28 +5,36 @@ const express = require("express");
 const ReportsControllers = require("../controllers/reports.controllers");
 
 //importing middlewares
-const { validateData } = require("../middlewares/validation");
 const AuthorizeTo = require("../middlewares/Auth/Authorization");
 
-//importing validations
-const {
-  benefitsSchema,
-  updateSchema,
-  benefitParam,
-} = require("../validations/benefits.validations");
-
-
+//importing constants
+const { SYSTEM_ROLES_ENUM } = require("../../config/constants");
 
 //initializing route
 const router = express.Router();
 
-router.get("/benefits", ReportsControllers.benefitsReport);
+router.get(
+  "/benefits",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0]),
+  ReportsControllers.benefitsReport
+);
 
-router.get("/assets", ReportsControllers.assetsReports);
+router.get(
+  "/assets",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0]),
+  ReportsControllers.assetsReports
+);
 
-router.get("/timeoffs", ReportsControllers.timeoffsReport);
+router.get(
+  "/timeoffs",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0]),
+  ReportsControllers.timeoffsReport
+);
 
-router.get("/salaries", ReportsControllers.salaryReport);
-
+router.get(
+  "/salaries",
+  AuthorizeTo(SYSTEM_ROLES_ENUM[0]),
+  ReportsControllers.salaryReport
+);
 
 module.exports = router;
