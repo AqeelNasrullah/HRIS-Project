@@ -3,6 +3,7 @@ class ApiFatures {
     this.query = query;
     this.queryStr = queryStr;
   }
+  //methods
   search() {
     const keyword = this.queryStr.keyword
       ? {
@@ -12,6 +13,7 @@ class ApiFatures {
           },
         }
       : {};
+      
     this.query = this.query.find({ ...keyword });
     return this;
   }
@@ -30,6 +32,7 @@ class ApiFatures {
   pagination(resultPerPage) {
     const currentPage = Number(this.queryStr.page) || 1;
     const skip = resultPerPage * (currentPage - 1);
+
     this.query = this.query.limit(resultPerPage).skip(skip);
     return this;
   }
